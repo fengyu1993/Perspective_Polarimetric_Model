@@ -1,1 +1,1 @@
-# Perspective-Polarimetric-Model
+# Perspective Polarimetric Model
