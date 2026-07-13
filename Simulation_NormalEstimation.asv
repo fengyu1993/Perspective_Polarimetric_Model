@@ -1,0 +1,131 @@
+%% 仿真：法向量估计比较
+clc; clear; close all;
+rng(1);
+%% Initialization
+% configuration
+Is = 2;
+Id = 3;
+eta = 1.5;
+row = 1024;
+col = 1224;
+K = [1232, 0, 612; 0, 1232, 512; 0, 0, 1]; 
+mask = ones(row, col);  Mask = mask == 1;
+% parameter
+V = getViewingDirection(K, Mask);  
+V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
+Beta = getPerspectiveDistortionAngle(V, Mask);
+Beta_orth = zeros(size(Beta));
+Psi = getPsiAngle(V, Mask);
+% normal vector
+Theta_desired = rand(row, col) * (pi/2); 
+Phi_desired = rand(row, col) * 2 * pi - pi; 
+N_desired = getSurfaceNormal(V, Theta_desired, Phi_desired, Mask);
+%% Polarimetric Image 
+Parameter_sp.Psi = Psi; Parameter_sp.Beta = Beta; Parameter_sp.eta = eta; Parameter_sp.Is = Is;
+Parameter_dp.Psi = Psi; Parameter_dp.Beta = Beta; Parameter_dp.eta = eta; Parameter_dp.Id = Id;
+% specular reflection
+PolarImage_sp.I0 = getPolarimetricImageSpecularReflection(Phi_desired, Theta_desired, Parameter_sp, 0);
+PolarImage_sp.I45 = getPolarimetricImageSpecularReflection(Phi_desired, Theta_desired, Parameter_sp, pi/4);
+PolarImage_sp.I90 = getPolarimetricImageSpecularReflection(Phi_desired, Theta_desired, Parameter_sp, 2*pi/4);
+PolarImage_sp.I135 = getPolarimetricImageSpecularReflection(Phi_desired, Theta_desired, Parameter_sp, 3*pi/4);
+% diffuse reflection
+PolarImage_dp.I0 = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp, 0);
+PolarImage_dp.I45 = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp, pi/4);
+PolarImage_dp.I90 = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp, 2*pi/4);
+PolarImage_dp.I135 = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp, 3*pi/4);
+%% Perspective or Orthographic projection
+% specular reflection
+N_sp = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta, V, eta, Mask);
+N_sp_orth = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta_orth, V_orth, eta, Mask);
+% diffuse reflection
+N_dp = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta, V, eta, Mask);
+N_dp_orth = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta_orth, V_orth, eta, Mask);
+%% IJCV Method
+
+
+
+%% Error analysis for specular reflection
+% perspective
+error_N_angle_sp = getErrorNormalAngle(N_sp, N_desired);
+fig_N_sp = figure; ax_t_N_angle_sp1 = subplot(1, 2, 1); imagesc(error_N_angle_sp); colormap(parula); colorbar; title('Perspective Specular Reflection N Angle');
+% orthographic
+error_N_angle_sp_orth = getErrorNormalAngle(N_sp_orth, N_desired);
+figure(fig_N_sp); ax_t_N_angle_sp2 = subplot(1, 2, 2); imagesc(error_N_angle_sp_orth); colormap(parula); colorbar; title('Orthographic Specular Reflection N Angle');
+max_val = max([get(ax_t_N_angle_sp1, 'CLim'), get(ax_t_N_angle_sp2, 'CLim')]); set(ax_t_N_angle_sp1, 'CLim', [0, max_val]); set(ax_t_N_angle_sp2, 'CLim', [0, max_val]);  
+%% Error analysis for diffuse reflection
+% perspective
+error_N_angle_dp = getErrorNormalAngle(N_dp, N_desired);
+fig_N_dp = figure; ax_t_N_angle_dp1 = subplot(1, 2, 1); imagesc(error_N_angle_dp); colormap(parula); colorbar; title('Perspective Diffuse Reflection N Angle');
+% orthographic
+error_N_angle_dp_orth = getErrorNormalAngle(N_dp_orth, N_desired);
+figure(fig_N_dp); ax_t_N_angle_dp2 = subplot(1, 2, 2); imagesc(error_N_angle_dp_orth); colormap(parula); colorbar; title('Orthographic Diffuse Reflection N Angle');
+max_val = max([get(ax_t_N_angle_dp1, 'CLim'), get(ax_t_N_angle_dp2, 'CLim')]); set(ax_t_N_angle_dp1, 'CLim', [0, max_val]); set(ax_t_N_angle_dp2, 'CLim', [0, max_val]); 
+%% Error statistics
+error_N_angle_sp_mean = mean(error_N_angle_sp(:)) * 180 / pi; error_N_angle_sp_orth_mean = mean(error_N_angle_sp_orth(:)) * 180 / pi;
+error_N_angle_dp_mean = mean(error_N_angle_dp(:)) * 180 / pi; error_N_angle_dp_orth_mean = mean(error_N_angle_dp_orth(:)) * 180 / pi;
+fprintf('Specular error N angle perspective/orthographic: %.3f / %.3f\n', error_N_angle_sp_mean, error_N_angle_sp_orth_mean);
+fprintf('Diffuse error N angle perspective/orthographic: %.3f / %.3f\n', error_N_angle_dp_mean, error_N_angle_dp_orth_mean);
+
+
+
+
+%% Get surface normal from specular reflection 
+function N = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta, V, eta, Mask)
+    Phi_sp = getAzimuthAngleSpecularReflection(PolarImage_sp, Mask);
+    Rho_sp = getDoLP(PolarImage_sp, Mask);
+    Theta_sp = getZenithAngleSpecularReflection(Rho_sp, Mask, Beta, eta);
+    N.sp1 = getSurfaceNormal(V, Theta_sp.sp1, Phi_sp.sp1, Mask);
+    N.sp2 = getSurfaceNormal(V, Theta_sp.sp2, Phi_sp.sp1, Mask);
+    N.sp3 = getSurfaceNormal(V, Theta_sp.sp1, Phi_sp.sp2, Mask);
+    N.sp4 = getSurfaceNormal(V, Theta_sp.sp2, Phi_sp.sp2, Mask);
+end
+%% Get surface normal from diffuse reflection 
+function N = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta, V, eta, Mask)
+    Phi_dp = getAzimuthAngleDiffuseReflection(PolarImage_dp, Mask);
+    Rho_dp = getDoLP(PolarImage_dp, Mask);
+    Theta_dp = getZenithAngleDiffuseReflection(Rho_dp, Mask, Beta, eta);
+    N.dp1 = getSurfaceNormal(V, Theta_dp.dp1, Phi_dp.dp1, Mask);
+    N.dp2 = getSurfaceNormal(V, Theta_dp.dp1, Phi_dp.dp3, Mask);
+    N.dp3 = getSurfaceNormal(V, Theta_dp.dp2, Phi_dp.dp2, Mask);
+    N.dp4 = getSurfaceNormal(V, Theta_dp.dp2, Phi_dp.dp4, Mask);
+end
+%% Get error Normal angle
+function error_normal_angle = getErrorNormalAngle(N, N_desired)
+    fields = fieldnames(N);
+    num_fields = length(fields);
+    [row, col, ~] = size(N_desired);
+    all_errors = zeros(row, col, num_fields);
+    for i = 1:num_fields
+        N_current = N.(fields{i}); 
+        all_errors(:, :, i) = acos(min(max(sum(N_current .* N_desired, 3), -1), 1));
+    end
+    error_normal_angle = min(all_errors, [], 3);
+end
+%% Get polarimetric image specular reflection
+function I_sp_phipol = getPolarimetricImageSpecularReflection(Phi_desired, Theta_desired, Parameter_sp, Phi_pol)
+    Psi = Parameter_sp.Psi; Beta = Parameter_sp.Beta; eta = Parameter_sp.eta; Is = Parameter_sp.Is;
+    G = sqrt(eta^2 - sin(Theta_desired).^2);
+    % specular reflection
+    R_p = ((G - eta^2 * cos(Theta_desired)) ./ (G + eta^2 * cos(Theta_desired))).^2;
+    R_s = ((G - cos(Theta_desired)) ./ (G + cos(Theta_desired))).^2;
+    I_sp_max = R_s ./ (R_s + R_p) * Is;
+    I_sp_min = R_p ./ (R_s + R_p) * Is;
+    % function
+    I_sp_phipol = ...
+        I_sp_min .* (cos(Beta).^2 .* cos(Phi_pol - Phi_desired) + sin(Phi_desired - Psi) .* sin(Beta).^2 .* sin(Phi_pol - Psi)).^2 ./ (cos(Beta).^2 + sin(Beta).^2 .* sin(Phi_desired - Psi).^2) ...
+        + I_sp_max .* (cos(Beta).^2 .* sin(Phi_pol - Phi_desired).^2) ./ (cos(Beta).^2 + sin(Beta).^2 .* sin(Phi_desired - Psi).^2);
+end
+%% Get polarimetric image diffuse reflection
+function I_dp_phipol = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp, Phi_pol)
+    Psi = Parameter_dp.Psi; Beta = Parameter_dp.Beta; eta = Parameter_dp.eta; Id = Parameter_dp.Id;
+    G = sqrt(eta^2 - sin(Theta_desired).^2);
+    % diffuse reflection
+    T_p = 4 * eta^2 * G .* cos(Theta_desired) ./ (G + eta^2 * cos(Theta_desired)).^2;
+    T_s = 4 * G .* cos(Theta_desired) ./ (G + cos(Theta_desired)).^2;
+    I_dp_max = T_p ./ (T_s + T_p) * Id;
+    I_dp_min = T_s ./ (T_s + T_p) * Id;
+    % function
+    I_dp_phipol = ...
+        I_dp_max .* (cos(Beta).^2 .* cos(Phi_pol - Phi_desired) + sin(Phi_desired - Psi) .* sin(Beta).^2 .* sin(Phi_pol - Psi)).^2 ./ (cos(Beta).^2 + sin(Beta).^2 .* sin(Phi_desired - Psi).^2) ...
+        + I_dp_min .* (cos(Beta).^2 .* sin(Phi_pol - Phi_desired).^2) ./ (cos(Beta).^2 + sin(Beta).^2 .* sin(Phi_desired - Psi).^2);
+end

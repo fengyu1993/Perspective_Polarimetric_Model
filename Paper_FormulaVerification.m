@@ -49,15 +49,11 @@ R_p = ((G - eta^2 * cos(Theta_desired)) ./ (G + eta^2 * cos(Theta_desired))).^2;
 R_s = ((G - cos(Theta_desired)) ./ (G + cos(Theta_desired))).^2;
 I_sp_max = R_s ./ (R_s + R_p) * Is;
 I_sp_min = R_p ./ (R_s + R_p) * Is;
-C_sp = (I_sp_max + I_sp_min .* cos(Beta).^2) / 2;
-A_sp = (I_sp_max - I_sp_min .* cos(Beta).^2) / 2;
 % diffuse reflection
 T_p = 4 * eta^2 * G .* cos(Theta_desired) ./ (G + eta^2 * cos(Theta_desired)).^2;
 T_s = 4 * G .* cos(Theta_desired) ./ (G + cos(Theta_desired)).^2;
 I_dp_max = T_p ./ (T_s + T_p) * Id;
 I_dp_min = T_s ./ (T_s + T_p) * Id;
-C_dp = (I_dp_max .* cos(Beta).^2 + I_dp_min) / 2;
-A_dp = (I_dp_max .* cos(Beta).^2 - I_dp_min) / 2;
 % function
 I_sp_phipol = @(Phi_pol) ...
     I_sp_min .* (cos(Beta).^2 .* cos(Phi_pol - Phi_desired) + sin(Phi_desired - Psi) .* sin(Beta).^2 .* sin(Phi_pol - Psi)).^2 ./ (cos(Beta).^2 + sin(Beta).^2 .* sin(Phi_desired - Psi).^2) ...
@@ -211,10 +207,3 @@ fprintf('Diffuse error N angle perspective/orthographic: %.3f / %.3f\n', error_N
 
 
 
-
-% [Phi, Theta] = getPhiTheta(N_desired, V, Mask);
-
-% err = abs(Theta - Theta_desired); err = min(err, 2*pi - err);
-% max(err(:))
-% err = abs(Phi - Phi_desired); err = min(err, 2*pi - err); %err = min(err, pi - err);
-% max(err(:))
