@@ -30,25 +30,32 @@ PolarImage_dp.I0 = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desi
 PolarImage_dp.I45 = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp, pi/4);
 PolarImage_dp.I90 = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp, 2*pi/4);
 PolarImage_dp.I135 = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp, 3*pi/4);
-%% Perspective or Orthographic projection
-% specular reflection
+%% Methods Specular Reflection
+% Perspective 
 N_sp = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta, V, eta, Mask);
+% Orthographic 
 N_sp_orth = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta_orth, V_orth, eta, Mask);
-% diffuse reflection
+% IJCV 
+N_sp_IJCV = getSurfaceNormalSpecularReflection_IJCV(PolarImage_sp, V, eta, Mask);
+%% Methods Diffuse Reflection
+% Perspective 
 N_dp = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta, V, eta, Mask);
+% Orthographic 
 N_dp_orth = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta_orth, V_orth, eta, Mask);
-%% IJCV Method
 
 
 
 %% Error analysis for specular reflection
 % perspective
 error_N_angle_sp = getErrorNormalAngle(N_sp, N_desired);
-fig_N_sp = figure; ax_t_N_angle_sp1 = subplot(1, 2, 1); imagesc(error_N_angle_sp); colormap(parula); colorbar; title('Perspective Specular Reflection N Angle');
+fig_N_sp = figure; ax_t_N_angle_sp1 = subplot(1, 3, 1); imagesc(error_N_angle_sp); colormap(parula); colorbar; title('Perspective Specular Reflection N Angle');
 % orthographic
 error_N_angle_sp_orth = getErrorNormalAngle(N_sp_orth, N_desired);
-figure(fig_N_sp); ax_t_N_angle_sp2 = subplot(1, 2, 2); imagesc(error_N_angle_sp_orth); colormap(parula); colorbar; title('Orthographic Specular Reflection N Angle');
-max_val = max([get(ax_t_N_angle_sp1, 'CLim'), get(ax_t_N_angle_sp2, 'CLim')]); set(ax_t_N_angle_sp1, 'CLim', [0, max_val]); set(ax_t_N_angle_sp2, 'CLim', [0, max_val]);  
+figure(fig_N_sp); ax_t_N_angle_sp2 = subplot(1, 3, 2); imagesc(error_N_angle_sp_orth); colormap(parula); colorbar; title('Orthographic Specular Reflection N Angle');
+% IJCV
+error_N_angle_sp_IJCV = getErrorNormalAngle(N_sp_IJCV, N_desired);
+figure(fig_N_sp); ax_t_N_angle_sp3 = subplot(1, 3, 3); imagesc(error_N_angle_sp_IJCV); colormap(parula); colorbar; title('IJCV Specular Reflection N Angle');
+
 %% Error analysis for diffuse reflection
 % perspective
 error_N_angle_dp = getErrorNormalAngle(N_dp, N_desired);
@@ -57,10 +64,14 @@ fig_N_dp = figure; ax_t_N_angle_dp1 = subplot(1, 2, 1); imagesc(error_N_angle_dp
 error_N_angle_dp_orth = getErrorNormalAngle(N_dp_orth, N_desired);
 figure(fig_N_dp); ax_t_N_angle_dp2 = subplot(1, 2, 2); imagesc(error_N_angle_dp_orth); colormap(parula); colorbar; title('Orthographic Diffuse Reflection N Angle');
 max_val = max([get(ax_t_N_angle_dp1, 'CLim'), get(ax_t_N_angle_dp2, 'CLim')]); set(ax_t_N_angle_dp1, 'CLim', [0, max_val]); set(ax_t_N_angle_dp2, 'CLim', [0, max_val]); 
+
 %% Error statistics
-error_N_angle_sp_mean = mean(error_N_angle_sp(:)) * 180 / pi; error_N_angle_sp_orth_mean = mean(error_N_angle_sp_orth(:)) * 180 / pi;
-error_N_angle_dp_mean = mean(error_N_angle_dp(:)) * 180 / pi; error_N_angle_dp_orth_mean = mean(error_N_angle_dp_orth(:)) * 180 / pi;
-fprintf('Specular error N angle perspective/orthographic: %.3f / %.3f\n', error_N_angle_sp_mean, error_N_angle_sp_orth_mean);
+error_N_angle_sp_mean = mean(error_N_angle_sp(:)) * 180 / pi; 
+error_N_angle_sp_orth_mean = mean(error_N_angle_sp_orth(:)) * 180 / pi;
+error_N_angle_sp_IJCV_mean = mean(error_N_angle_sp_IJCV(:)) * 180 / pi;
+fprintf('Specular error N angle perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_sp_mean, error_N_angle_sp_orth_mean, error_N_angle_sp_IJCV_mean);
+error_N_angle_dp_mean = mean(error_N_angle_dp(:)) * 180 / pi; 
+error_N_angle_dp_orth_mean = mean(error_N_angle_dp_orth(:)) * 180 / pi;
 fprintf('Diffuse error N angle perspective/orthographic: %.3f / %.3f\n', error_N_angle_dp_mean, error_N_angle_dp_orth_mean);
 
 
