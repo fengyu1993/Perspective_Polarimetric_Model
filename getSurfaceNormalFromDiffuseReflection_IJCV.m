@@ -1,7 +1,7 @@
-%% Get surface normal specular reflection IJCV Method
+%% Get surface normal diffuse reflection IJCV Method
 % A Geometric Model for Polarization Imaging on Projective Cameras
-function N_IJCV = getSurfaceNormalSpecularReflection_IJCV(PolarImage_sp, V, eta, Mask)
-    I_0 = PolarImage_sp.I0; I_45 = PolarImage_sp.I45; I_90 = PolarImage_sp.I90; I_135 = PolarImage_sp.I135;
+function N_IJCV = getSurfaceNormalFromDiffuseReflection_IJCV(PolarImage_dp, V, eta, Mask)
+    I_0 = PolarImage_dp.I0; I_45 = PolarImage_dp.I45; I_90 = PolarImage_dp.I90; I_135 = PolarImage_dp.I135;
     %% Step 2
     rays_reshaped = reshape(V, [], 3);
     r_z = rays_reshaped(Mask(:), :)';
@@ -32,28 +32,42 @@ function N_IJCV = getSurfaceNormalSpecularReflection_IJCV(PolarImage_sp, V, eta,
     I_list =  [I_0(Mask), I_45(Mask), I_90(Mask), I_135(Mask)]';
     S_list = get_S_modify(I_list, alpha_0_modify, alpha_45_modify, alpha_90_modify, alpha_135_modify);   
     %% Step 5
-    Phi_sp =  zeros(size(Mask));
-    Rho_sp =  zeros(size(Mask));
-    Phi_sp(Mask) = 0.5 * atan2(S_list(3,:), S_list(2,:));
-    Rho_sp(Mask) = sqrt(S_list(2,:).^2 + S_list(3,:).^2) ./ S_list(1,:);
-    Theta_sp = getZenithAngleSpecularReflection(Rho_sp, Mask, zeros(size(Mask)), eta);
+    Phi_dp =  zeros(size(Mask));
+    Rho_dp =  zeros(size(Mask));
+    Phi_dp(Mask) = 0.5 * atan2(S_list(3,:), S_list(2,:));
+    Phi.dp1 = mod(Phi_dp, pi);
+    Phi.dp2 = Phi.dp1 - pi;
+    Rho_dp(Mask) = sqrt(S_list(2,:).^2 + S_list(3,:).^2) ./ S_list(1,:);
+    Theta_dp = getZenithAngleDiffuseReflection(Rho_dp, Mask, zeros(size(Mask)), eta);
     %% Step 6
     [row, col] = size(Mask);
-    V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
-    N_sp_local_1 = getSurfaceNormal(V_orth, Theta_sp.sp1, Phi_sp, Mask);
-    N_sp_local_2 = getSurfaceNormal(V_orth, Theta_sp.sp2, Phi_sp, Mask);
+    V_orth = zeros(row, col, 3); V_orth(:,:,3) = 1;
+    N_dp_local_1 = getSurfaceNormal(V_orth, Theta_dp.dp1, Phi.dp1, Mask);
+    N_dp_local_2 = getSurfaceNormal(V_orth, Theta_dp.dp2, Phi.dp1, Mask);
+    N_dp_local_3 = getSurfaceNormal(V_orth, Theta_dp.dp1, Phi.dp2, Mask);
+    N_dp_local_4 = getSurfaceNormal(V_orth, Theta_dp.dp2, Phi.dp2, Mask);   
     %% Step 7
     num_pixels = size(R_list, 3);
-    N_loc_flat1 = reshape(N_sp_local_1(repmat(Mask, [1 1 3])), [], 3)'; 
+    N_loc_flat1 = reshape(N_dp_local_1(repmat(Mask, [1 1 3])), [], 3)'; 
+    N_loc_flat2 = reshape(N_dp_local_2(repmat(Mask, [1 1 3])), [], 3)'; 
+    N_loc_flat3 = reshape(N_dp_local_3(repmat(Mask, [1 1 3])), [], 3)'; 
+    N_loc_flat4 = reshape(N_dp_local_4(repmat(Mask, [1 1 3])), [], 3)'; 
     N_loc_page1 = reshape(N_loc_flat1, 3, 1, num_pixels);
-    N_loc_flat2 = reshape(N_sp_local_2(repmat(Mask, [1 1 3])), [], 3)'; 
     N_loc_page2 = reshape(N_loc_flat2, 3, 1, num_pixels);
+    N_loc_page3 = reshape(N_loc_flat3, 3, 1, num_pixels);
+    N_loc_page4 = reshape(N_loc_flat4, 3, 1, num_pixels);
     N_glo_page1 = pagemtimes(R_list, N_loc_page1);
     N_glo_page2 = pagemtimes(R_list, N_loc_page2);
-    N_IJCV.sp1 = zeros(row, col, 3); 
-    N_IJCV.sp2 = zeros(row, col, 3);
-    N_IJCV.sp1(repmat(Mask, [1 1 3])) = reshape(squeeze(N_glo_page1)', [], 1);
-    N_IJCV.sp2(repmat(Mask, [1 1 3])) = reshape(squeeze(N_glo_page2)', [], 1);
+    N_glo_page3 = pagemtimes(R_list, N_loc_page3);
+    N_glo_page4 = pagemtimes(R_list, N_loc_page4);
+    N_IJCV.dp1 = zeros(row, col, 3); 
+    N_IJCV.dp2 = zeros(row, col, 3);
+    N_IJCV.dp3 = zeros(row, col, 3); 
+    N_IJCV.dp4 = zeros(row, col, 3);
+    N_IJCV.dp1(repmat(Mask, [1 1 3])) = reshape(squeeze(N_glo_page1)', [], 1);
+    N_IJCV.dp2(repmat(Mask, [1 1 3])) = reshape(squeeze(N_glo_page2)', [], 1);
+    N_IJCV.dp3(repmat(Mask, [1 1 3])) = reshape(squeeze(N_glo_page3)', [], 1);
+    N_IJCV.dp4(repmat(Mask, [1 1 3])) = reshape(squeeze(N_glo_page4)', [], 1);
 end
 
 
