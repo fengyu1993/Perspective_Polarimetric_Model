@@ -17,19 +17,19 @@ num = 30;
 [errorBetaHemisphereMean, errorBetaHemisphereStd, betaHemisphereList] = getErrorBetaMeanStd(Hemisphere, num);
 [errorBetaRandomMean, errorBetaRandomStd, betaRandomList] = getErrorBetaMeanStd(Random, num);
 %
-figPlaneMeanStd = figure('Position', [100, 100, 650, 450]);  
+figPlaneMeanStd = figure('Position', [100, 100, 850, 450]);  
 plotBetaMeanStd(figPlaneMeanStd, errorBetaPlaneMean, errorBetaPlaneStd, betaPlaneList, colors, plotParameter);
 axis([0 0.55 0 1]);
 set(gca, 'xtick', 0:0.1:0.6, 'ytick', 0:0.2:1, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
 exportgraphics(figPlaneMeanStd, 'fig_Error_Beta_Normal_Angle_Plane_Diffuse.png', 'Resolution', plotParameter.Resolution);
 %
-figHemisphereMeanStd = figure('Position', [100, 100, 650, 450]);   
+figHemisphereMeanStd = figure('Position', [100, 100, 850, 450]);   
 plotBetaMeanStd(figHemisphereMeanStd, errorBetaHemisphereMean, errorBetaHemisphereStd, betaHemisphereList, colors, plotParameter);
 axis([0 0.55 0 1]);
 set(gca, 'xtick', 0:0.1:0.6, 'ytick', 0:0.2:1, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
 exportgraphics(figHemisphereMeanStd, 'fig_Error_Beta_Normal_Angle_Hemisphere_Diffuse.png', 'Resolution', plotParameter.Resolution);
 %
-figRandomMeanStd = figure('Position', [100, 100, 650, 450]);   
+figRandomMeanStd = figure('Position', [100, 100, 850, 450]);   
 plotBetaMeanStd(figRandomMeanStd, errorBetaRandomMean, errorBetaRandomStd, betaRandomList, colors, plotParameter);
 axis([0 0.55 0 1.2]);
 set(gca, 'xtick', 0:0.1:0.6, 'ytick', 0:0.3:1.2, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
@@ -175,8 +175,6 @@ exportgraphics(figRandomIJCV, 'fig_Error_Normal_Random_Diffuse_IJCV.png', 'Resol
 
 
 
-
-
 %%
 function [errorBetaMean, errorBetaStd, betaList] = getErrorBetaMeanStd(Data, num)
     maxBeta = max(Data.Beta(:));
@@ -213,12 +211,13 @@ function plotBetaMeanStd(fig, errorBetaMean, errorBetaStd, betaList, colors, plo
     lower_IJCV = errorBetaMean.IJCV - errorBetaStd.IJCV;
     fill([x, fliplr(x)], [upper_IJCV, fliplr(lower_IJCV)], colors(3,:),  'FaceAlpha', 0.2, 'EdgeColor', 'none');
     p3 = plot(x, errorBetaMean.IJCV, 'color', colors(3,:),'LineWidth', plotParameter.LineWidth * plotParameter.Scale);
-    legend([p1, p2, p3], "Ours", "Orth.", "GMPC", 'Location', 'northwest', 'FontSize', plotParameter.FontSize, 'FontName', 'Times New Roman');
+    legend([p2, p3, p1], "Orth.", "GMPC", "Ours", 'Location', 'northwest', 'FontSize', plotParameter.FontSize, 'FontName', 'Times New Roman');
     set(gca,'LineWidth', plotParameter.LineWidth * plotParameter.Scale);
-    xlabel('Perspective distortion angle \beta', 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman');
-    ylabel('Normal error angle \Delta \gamma', 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman');
-
+    xlabel('\beta', 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman');
+    ylabel('\Delta \gamma', 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman');
 end
+
+
 
 
 

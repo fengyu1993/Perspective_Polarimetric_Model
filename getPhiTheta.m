@@ -17,4 +17,7 @@ function [Phi, Theta] = getPhiTheta(N, V, Mask)
     Phi_valid(id) = Phi_valid(id) + pi;
     Phi(Mask) = Phi_valid;
     Phi = wrapToPi(Phi);
+
+    Phi(~Mask) = NaN;
+    Theta(~Mask) = NaN;
 end

@@ -1,7 +1,7 @@
 %% Get zenith angle for the specular reflection
 function Theta = getZenithAngleSpecularReflection(Rho, Mask, Beta, eta)
-    Theta.sp1 = zeros(size(Mask));
-    Theta.sp2 = zeros(size(Mask));
+    Theta.sp1 = NaN(size(Mask));
+    Theta.sp2 = NaN(size(Mask));
     epsilon = 1e-8;
     % Lambda_sp
     rho_valid = min(max(Rho(Mask), 0), 1);

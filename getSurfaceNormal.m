@@ -10,8 +10,8 @@ function N = getSurfaceNormal(V, Theta, Phi, Mask)
     e_p = cross(e_s, V_valid, 2);
     N_valid = V_valid .* cos(Theta_valid) + e_p .* sin(Theta_valid);
     [h, w] = size(Mask);
-    Nx = zeros(h, w); Nx(Mask) = N_valid(:, 1);
-    Ny = zeros(h, w); Ny(Mask) = N_valid(:, 2);
-    Nz = zeros(h, w); Nz(Mask) = N_valid(:, 3);
+    Nx = NaN(h, w); Nx(Mask) = N_valid(:, 1); 
+    Ny = NaN(h, w); Ny(Mask) = N_valid(:, 2); 
+    Nz = NaN(h, w); Nz(Mask) = N_valid(:, 3); 
     N = cat(3, Nx, Ny, Nz);
 end

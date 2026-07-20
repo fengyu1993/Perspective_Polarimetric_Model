@@ -195,12 +195,18 @@ error_N_angle_sp_mean = mean(error_N_angle_sp(:)) * 180 / pi;
 error_N_angle_sp_orth_mean = mean(error_N_angle_sp_orth(:)) * 180 / pi;
 error_N_angle_dp_mean = mean(error_N_angle_dp(:)) * 180 / pi;
 error_N_angle_dp_orth_mean = mean(error_N_angle_dp_orth(:)) * 180 / pi;
+error_N_angle_sp_max = max(error_N_angle_sp(:)) * 180 / pi;
+error_N_angle_sp_orth_max = max(error_N_angle_sp_orth(:)) * 180 / pi;
+error_N_angle_dp_max = max(error_N_angle_dp(:)) * 180 / pi;
+error_N_angle_dp_orth_max = max(error_N_angle_dp_orth(:)) * 180 / pi;
 fprintf('Specular error phi: %.3f\n', error_phi_sp_mean);
 fprintf('Diffuse error phi: %.3f\n', error_phi_dp_mean);
-fprintf('Specular error theta perspective/orthographic: %.3f / %.3f\n', error_theta_sp_mean, error_theta_sp_mean_orth);
-fprintf('Diffuse error theta perspective/orthographic: %.3f / %.3f\n', error_theta_dp_mean, error_theta_dp_mean_orth);
-fprintf('Specular error N angle perspective/orthographic: %.3f / %.3f\n', error_N_angle_sp_mean, error_N_angle_sp_orth_mean);
-fprintf('Diffuse error N angle perspective/orthographic: %.3f / %.3f\n', error_N_angle_dp_mean, error_N_angle_dp_orth_mean);
+fprintf('Specular mean error theta perspective/orthographic: %.3f / %.3f\n', error_theta_sp_mean, error_theta_sp_mean_orth);
+fprintf('Diffuse mean error theta perspective/orthographic: %.3f / %.3f\n', error_theta_dp_mean, error_theta_dp_mean_orth);
+fprintf('Specular mean error N angle perspective/orthographic: %.3f / %.3f\n', error_N_angle_sp_mean, error_N_angle_sp_orth_mean);
+fprintf('Diffuse mean error N angle perspective/orthographic: %.3f / %.3f\n', error_N_angle_dp_mean, error_N_angle_dp_orth_mean);
+fprintf('Specular max error N angle perspective/orthographic: %.3f / %.3f\n', error_N_angle_sp_max, error_N_angle_sp_orth_max);
+fprintf('Diffuse max error N angle perspective/orthographic: %.3f / %.3f\n', error_N_angle_dp_max, error_N_angle_dp_orth_max);
 
 
 

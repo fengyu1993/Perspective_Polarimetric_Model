@@ -1,7 +1,7 @@
 %% Get zenith angle for the diffuse reflection
 function Theta = getZenithAngleDiffuseReflection(Rho, Mask, Beta, eta)
-    Theta.dp1 = zeros(size(Mask));
-    Theta.dp2 = zeros(size(Mask));
+    Theta.dp1 = NaN(size(Mask));
+    Theta.dp2 = NaN(size(Mask));
     rho_valid = min(max(Rho(Mask), 0), 1);
     beta_valid = Beta(Mask);
     % rho > 0
