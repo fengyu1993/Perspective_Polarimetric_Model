@@ -1,6 +1,6 @@
 %% Get surface normal diffuse reflection IJCV Method
 % A Geometric Model for Polarization Imaging on Projective Cameras
-function N_IJCV = getSurfaceNormalFromDiffuseReflection_IJCV(PolarImage_dp, V, eta, Mask)
+function N_IJCV = getSurfaceNormalFromDiffuseReflection_IJCV(PolarImage_dp, V, eta, a, Mask)
     I_0 = PolarImage_dp.I0; I_45 = PolarImage_dp.I45; I_90 = PolarImage_dp.I90; I_135 = PolarImage_dp.I135;
     %% Step 2
     rays_reshaped = reshape(V, [], 3);
@@ -38,7 +38,7 @@ function N_IJCV = getSurfaceNormalFromDiffuseReflection_IJCV(PolarImage_dp, V, e
     Phi.dp1 = mod(Phi_dp, pi);
     Phi.dp2 = Phi.dp1 - pi;
     Rho_dp(Mask) = sqrt(S_list(2,:).^2 + S_list(3,:).^2) ./ S_list(1,:);
-    Theta_dp = getZenithAngleDiffuseReflection(Rho_dp, Mask, zeros(size(Mask)), eta);
+    Theta_dp = getZenithAngleDiffuseReflection(Rho_dp ./ a, Mask, zeros(size(Mask)), eta);
     %% Step 6
     [row, col] = size(Mask);
     V_orth = zeros(row, col, 3); V_orth(:,:,3) = 1;

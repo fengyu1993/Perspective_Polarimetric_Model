@@ -30,18 +30,18 @@ Parameter_dp.Psi = Psi; Parameter_dp.Beta = Beta; Parameter_dp.eta = eta; Parame
 PolarImage_dp = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp);
 %% Methods Specular Reflection
 % Perspective 
-N_sp = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta, V, eta, Mask);
+N_sp = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta, V, eta, 1, Mask);
 % Orthographic 
-N_sp_orth = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta_orth, V_orth, eta, Mask);
+N_sp_orth = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta_orth, V_orth, eta, 1, Mask);
 % IJCV 
-N_sp_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(PolarImage_sp, V, eta, Mask);
+N_sp_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(PolarImage_sp, V, eta, 1, Mask);
 %% Methods Diffuse Reflection
 % Perspective 
-N_dp = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta, V, eta, Mask);
+N_dp = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta, V, eta, 1, Mask);
 % Orthographic 
-N_dp_orth = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta_orth, V_orth, eta, Mask);
+N_dp_orth = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta_orth, V_orth, eta, 1, Mask);
 % IJCV 
-N_dp_IJCV = getSurfaceNormalFromDiffuseReflection_IJCV(PolarImage_dp, V, eta, Mask);
+N_dp_IJCV = getSurfaceNormalFromDiffuseReflection_IJCV(PolarImage_dp, V, eta, 1, Mask);
 %% Error analysis for specular reflection
 % perspective
 error_N_angle_sp = getErrorNormalAngle(N_sp, N_desired, Mask);
@@ -69,11 +69,19 @@ plot3DShape(fig, N_desired, Mask);
 error_N_angle_sp_mean = mean(error_N_angle_sp(Mask)) * 180 / pi; 
 error_N_angle_sp_orth_mean = mean(error_N_angle_sp_orth(Mask)) * 180 / pi;
 error_N_angle_sp_IJCV_mean = mean(error_N_angle_sp_IJCV(Mask)) * 180 / pi;
-fprintf('Specular error N angle perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_sp_mean, error_N_angle_sp_orth_mean, error_N_angle_sp_IJCV_mean);
+error_N_angle_sp_rmse = sqrt(mean(error_N_angle_sp(Mask).^2)) * 180 / pi; 
+error_N_angle_sp_orth_rmse = sqrt(mean(error_N_angle_sp_orth(Mask).^2)) * 180 / pi;
+error_N_angle_sp_IJCV_rmse = sqrt(mean(error_N_angle_sp_IJCV(Mask).^2)) * 180 / pi;
+fprintf('Specular error N angle MAE perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_sp_mean, error_N_angle_sp_orth_mean, error_N_angle_sp_IJCV_mean);
+fprintf('Specular error N angle RMSE perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_sp_rmse, error_N_angle_sp_orth_rmse, error_N_angle_sp_IJCV_rmse);
 error_N_angle_dp_mean = mean(error_N_angle_dp(Mask)) * 180 / pi; 
 error_N_angle_dp_orth_mean = mean(error_N_angle_dp_orth(Mask)) * 180 / pi;
 error_N_angle_dp_IJCV_mean = mean(error_N_angle_dp_IJCV(Mask)) * 180 / pi;
-fprintf('Diffuse error N angle perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_dp_mean, error_N_angle_dp_orth_mean, error_N_angle_dp_IJCV_mean);
+error_N_angle_dp_rmse = sqrt(mean(error_N_angle_dp(Mask).^2)) * 180 / pi; 
+error_N_angle_dp_orth_rmse = sqrt(mean(error_N_angle_dp_orth(Mask).^2)) * 180 / pi;
+error_N_angle_dp_IJCV_rmse = sqrt(mean(error_N_angle_dp_IJCV(Mask).^2)) * 180 / pi;
+fprintf('Diffuse error N angle MAE perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_dp_mean, error_N_angle_dp_orth_mean, error_N_angle_dp_IJCV_mean);
+fprintf('Diffuse error N angle RMSE perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_dp_rmse, error_N_angle_dp_orth_rmse, error_N_angle_dp_IJCV_rmse);
 %% Save data
 if flag == 1 % plane
     save('./Data/Data_SimulationPlane.mat', 'Beta', 'N_desired', ...
@@ -145,7 +153,7 @@ function [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectivePlane(V, 
     N_desired = cat(3, Nx, Ny, Nz);
     [Phi_desired, Theta_desired] = getPhiTheta(N_desired, V, Mask);
 end
-function [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectiveHemisphere(V, row, col, Mask)
+function [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectiveHemisphere(V, row, col)
 
     [X_grid, Y_grid] = meshgrid(1:col, 1:row);
     center_x = col / 2;
@@ -209,12 +217,12 @@ function [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectiveHemispher
     Phi_desired(Mask) = Phi_valid;
 end
 function [Phi_desired, Theta_desired, N_desired] = getPerspectiveRand(V, row, col, Mask)
-    rng(2);
+    rng(1);
 
     Theta_raw = rand(row, col) * (pi/2); 
     Phi_raw = rand(row, col) * 2 * pi - pi; 
     
-    sigma = 0.5; 
+    sigma = 1.2; 
     Theta_desired = imgaussfilt(Theta_raw, sigma, 'Padding', 'replicate');
     Phi_desired   = imgaussfilt(Phi_raw, sigma, 'Padding', 'replicate');
     

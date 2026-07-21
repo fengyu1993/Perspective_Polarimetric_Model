@@ -10,9 +10,9 @@ function V = getViewingDirection(K, Mask)
     vec_lengths = sqrt(sum(P_norm.^2, 1));
     V_valid = -P_norm ./ vec_lengths;
     
-    Vx = zeros(h, w); Vx(Mask) = V_valid(1, :);
-    Vy = zeros(h, w); Vy(Mask) = V_valid(2, :);
-    Vz = zeros(h, w); Vz(Mask) = V_valid(3, :);
+    Vx = NaN(h, w); Vx(Mask) = V_valid(1, :);
+    Vy = NaN(h, w); Vy(Mask) = V_valid(2, :);
+    Vz = NaN(h, w); Vz(Mask) = V_valid(3, :);
     
     V = cat(3, Vx, Vy, Vz);
 end

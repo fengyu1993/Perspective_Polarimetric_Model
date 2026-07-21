@@ -1,6 +1,6 @@
 %% Get surface normal specular reflection IJCV Method
 % A Geometric Model for Polarization Imaging on Projective Cameras
-function N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(PolarImage_sp, V, eta, Mask)
+function N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(PolarImage_sp, V, eta, a, Mask)
     I_0 = PolarImage_sp.I0; I_45 = PolarImage_sp.I45; I_90 = PolarImage_sp.I90; I_135 = PolarImage_sp.I135;
     %% Step 2
     rays_reshaped = reshape(V, [], 3);
@@ -40,7 +40,7 @@ function N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(PolarImage_sp, V, 
     Phi.sp2 = Phi.sp1 - pi;
     Rho_sp(Mask) = sqrt(S_list(2,:).^2 + S_list(3,:).^2) ./ S_list(1,:);
     Rho_sp(~Mask) = NaN;
-    Theta_sp = getZenithAngleSpecularReflection(Rho_sp, Mask, zeros(size(Mask)), eta);
+    Theta_sp = getZenithAngleSpecularReflection(Rho_sp ./ a, Mask, zeros(size(Mask)), eta);
     %% Step 6
     [row, col] = size(Mask);
     V_orth = zeros(row, col, 3); V_orth(:,:,3) = 1;

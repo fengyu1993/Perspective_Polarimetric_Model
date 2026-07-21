@@ -49,37 +49,37 @@ set(gca, 'xtick', 0:0.1:0.6, 'ytick', 0:0.2:1, 'FontSize', plotParameter.FontSiz
 exportgraphics(figRandomMeanStd, 'fig_Error_Beta_Normal_Angle_Diffuse.png', 'Resolution', plotParameter.Resolution);
 %% Plane
 % perspective
-figPlanePers = figure;
-axPers = axes(figPlanePers);
-imagesc(Plane.error_N_angle_dp); 
+figPlanePers = figure('Position', [100, 100, 620, 420]);
+ax = axes(figPlanePers);
+h = imagesc(Plane.error_N_angle_dp); set(h, 'AlphaData', Plane.Mask); set(ax, 'Color', 'k'); 
 axis equal; axis([0, col, 0, row]);
-set(axPers, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(gca,'LineWidth', plotParameter.LineWidth );
 xtickangle(0);
-colormap(axPers, parula); 
-colorbar(axPers); 
+colormap(ax, parula); 
+colorbar(ax); 
 title('Ours', 'FontSize', plotParameter.FontSize * plotParameter.Scale, 'FontName', 'Times New Roman');
 % orthographic 
-figPlaneOrth = figure;
-axOrth = axes(figPlaneOrth);
-imagesc(Plane.error_N_angle_dp_orth); 
+figPlaneOrth = figure('Position', [100, 100, 620, 420]);
+ax = axes(figPlaneOrth);
+h = imagesc(Plane.error_N_angle_dp_orth); set(h, 'AlphaData', Plane.Mask); set(ax, 'Color', 'k'); 
 axis equal; axis([0, col, 0, row]);
-set(axOrth, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
-set(axOrth,'LineWidth', plotParameter.LineWidth );
+set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+set(ax,'LineWidth', plotParameter.LineWidth );
 xtickangle(0);
-colormap(axOrth, parula); 
-colorbar(axOrth); 
+colormap(ax, parula); 
+colorbar(ax); 
 title('Orth.', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
 % IJCV
-figPlaneIJCV = figure;
-axIJCV = axes(figPlaneIJCV);
-imagesc(Plane.error_N_angle_dp_IJCV); 
+figPlaneIJCV = figure('Position', [100, 100, 620, 420]);
+ax = axes(figPlaneIJCV);
+h = imagesc(Plane.error_N_angle_dp_IJCV); set(h, 'AlphaData', Plane.Mask); set(ax, 'Color', 'k'); 
 axis equal; axis([0, col, 0, row]);
-set(axIJCV, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
-set(axIJCV,'LineWidth', plotParameter.LineWidth );
+set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+set(ax,'LineWidth', plotParameter.LineWidth );
 xtickangle(0);
-colormap(axIJCV, parula); 
-colorbar(axIJCV); 
+colormap(ax, parula); 
+colorbar(ax); 
 title('GMPC', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
 % setup
 % climPers = get(axPers, 'CLim');
@@ -95,37 +95,37 @@ exportgraphics(figPlaneOrth, 'fig_Error_Normal_Plane_Diffuse_orth.png', 'Resolut
 exportgraphics(figPlaneIJCV, 'fig_Error_Normal_Plane_Diffuse_IJCV.png', 'Resolution', plotParameter.Resolution);
 %% Hemisphere
 % perspective
-figHemispherePers = figure;
-axPers = axes(figHemispherePers);
-imagesc(Hemisphere.error_N_angle_dp); 
+figHemispherePers = figure('Position', [100, 100, 620, 420]);
+ax = axes(figHemispherePers);
+h = imagesc(Hemisphere.error_N_angle_dp); set(h, 'AlphaData', Hemisphere.Mask); set(ax, 'Color', 'k'); 
 axis equal; axis([0, col, 0, row]);
-set(axPers, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(gca,'LineWidth', plotParameter.LineWidth );
 xtickangle(0);
-colormap(axPers, parula); 
-colorbar(axPers); 
+colormap(ax, parula); 
+colorbar(ax); 
 title('Ours', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
 % orthographic 
-figHemisphereOrth = figure;
-axOrth = axes(figHemisphereOrth);
-imagesc(Hemisphere.error_N_angle_dp_orth); 
+figHemisphereOrth = figure('Position', [100, 100, 620, 420]);
+ax = axes(figHemisphereOrth);
+h = imagesc(Hemisphere.error_N_angle_dp_orth); set(h, 'AlphaData', Hemisphere.Mask); set(ax, 'Color', 'k'); 
 axis equal; axis([0, col, 0, row]);
-set(axOrth, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
-set(axOrth,'LineWidth', plotParameter.LineWidth );
+set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+set(ax,'LineWidth', plotParameter.LineWidth );
 xtickangle(0);
-colormap(axOrth, parula); 
-colorbar(axOrth); 
+colormap(ax, parula); 
+colorbar(ax); 
 title('Orth.', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
 % IJCV
-figHemisphereIJCV = figure;
-axIJCV = axes(figHemisphereIJCV);
-imagesc(Hemisphere.error_N_angle_dp_IJCV); 
+figHemisphereIJCV = figure('Position', [100, 100, 620, 420]);
+ax = axes(figHemisphereIJCV);
+h = imagesc(Hemisphere.error_N_angle_dp_IJCV); set(h, 'AlphaData', Hemisphere.Mask); set(ax, 'Color', 'k'); 
 axis equal; axis([0, col, 0, row]);
-set(axIJCV, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
-set(axIJCV,'LineWidth', plotParameter.LineWidth );
+set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+set(ax,'LineWidth', plotParameter.LineWidth );
 xtickangle(0);
-colormap(axIJCV, parula); 
-colorbar(axIJCV); 
+colormap(ax, parula); 
+colorbar(ax); 
 title('GMPC', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
 % setup
 % climPers = get(axPers, 'CLim');
@@ -141,37 +141,37 @@ exportgraphics(figHemisphereOrth, 'fig_Error_Normal_Hemisphere_Diffuse_orth.png'
 exportgraphics(figHemisphereIJCV, 'fig_Error_Normal_Hemisphere_Diffuse_IJCV.png', 'Resolution', plotParameter.Resolution);
 %% Random
 % perspective
-figRandomPers = figure;
-axPers = axes(figRandomPers);
-imagesc(Random.error_N_angle_dp); 
+figRandomPers = figure('Position', [100, 100, 620, 420]);
+ax = axes(figRandomPers);
+h = imagesc(Random.error_N_angle_dp); set(h, 'AlphaData', Random.Mask); set(ax, 'Color', 'k'); 
 axis equal; axis([0, col, 0, row]);
-set(axPers, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(gca,'LineWidth', plotParameter.LineWidth );
 xtickangle(0);
-colormap(axPers, parula); 
-colorbar(axPers); 
+colormap(ax, parula); 
+colorbar(ax); 
 title('Ours', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
 % orthographic 
-figRandomOrth = figure;
-axOrth = axes(figRandomOrth);
-imagesc(Random.error_N_angle_dp_orth); 
+figRandomOrth = figure('Position', [100, 100, 620, 420]);
+ax = axes(figRandomOrth);
+h = imagesc(Random.error_N_angle_dp_orth); set(h, 'AlphaData', Random.Mask); set(ax, 'Color', 'k'); 
 axis equal; axis([0, col, 0, row]);
-set(axOrth, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
-set(axOrth,'LineWidth', plotParameter.LineWidth );
+set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+set(ax,'LineWidth', plotParameter.LineWidth );
 xtickangle(0);
-colormap(axOrth, parula); 
-colorbar(axOrth); 
+colormap(ax, parula); 
+colorbar(ax); 
 title('Orth.', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
 % IJCV
-figRandomIJCV = figure;
-axIJCV = axes(figRandomIJCV);
-imagesc(Random.error_N_angle_dp_IJCV); 
+figRandomIJCV = figure('Position', [100, 100, 620, 420]);
+ax = axes(figRandomIJCV);
+h = imagesc(Random.error_N_angle_dp_IJCV); set(h, 'AlphaData', Random.Mask); set(ax, 'Color', 'k'); 
 axis equal; axis([0, col, 0, row]);
-set(axIJCV, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
-set(axIJCV,'LineWidth', plotParameter.LineWidth );
+set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+set(ax,'LineWidth', plotParameter.LineWidth );
 xtickangle(0);
-colormap(axIJCV, parula); 
-colorbar(axIJCV); 
+colormap(ax, parula); 
+colorbar(ax); 
 title('GMPC', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
 % setup
 % climPers = get(axPers, 'CLim');
