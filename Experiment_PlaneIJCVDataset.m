@@ -33,6 +33,17 @@ for i = 1 : 10%length(name)
     error_N_angle = getErrorNormalAngle(N, N_desired, Mask);
     error_N_angle_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
     error_N_angle_IJCV = getErrorNormalAngle(N_IJCV, N_desired, Mask);
+    %%
+    n_est_IJCV = get_normal_vector_IJCV(polarImage.I0, polarImage.I45, polarImage.I90, polarImage.I135, Mask, V);
+    err_n_IJCV = acos(n' * n_est_IJCV)
+    
+    %%
+    figure;
+    subplot(2,2,1); imshow(polarImage.I0, [0, 255]); title("I_{0}", 'font','FontName', 'Times New Roman', 'FontSize', 14);
+    subplot(2,2,2); imshow(polarImage.I45, [0, 255]); title("I_{45}", 'font','FontName', 'Times New Roman', 'FontSize', 14);
+    subplot(2,2,3); imshow(polarImage.I90, [0, 255]); title("I_{90}", 'font','FontName', 'Times New Roman', 'FontSize', 14);
+    subplot(2,2,4); imshow(polarImage.I135, [0, 255]); title("I_{135}", 'font','FontName', 'Times New Roman', 'FontSize', 14);
+    figure; imshow(Mask);
 
     
     fig_N_sp = figure; ax = subplot(1, 3, 1); h = imagesc(error_N_angle); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Perspective Specular Reflection N Angle');
