@@ -51,7 +51,7 @@ exportgraphics(figRandomMeanStd, 'fig_Error_Beta_Normal_Angle_Specular.png', 'Re
 % perspective
 figPlanePers = figure('Position', [100, 100, 620, 420]);
 ax = axes(figPlanePers);
-h = imagesc(Plane.error_N_angle_sp); set(h, 'AlphaData', Plane.Mask); set(ax, 'Color', 'k'); 
+h = imagesc(Plane.error_N_angle_sp); set(h, 'AlphaData', Plane.Mask); set(ax, 'Color', 'w'); 
 axis equal; axis([0, col, 0, row]);
 set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(gca,'LineWidth', plotParameter.LineWidth );
@@ -62,7 +62,7 @@ title('Ours', 'FontSize', plotParameter.FontSize * plotParameter.Scale, 'FontNam
 % orthographic 
 figPlaneOrth = figure('Position', [100, 100, 620, 420]);
 ax = axes(figPlaneOrth);
-h = imagesc(Plane.error_N_angle_sp_orth); set(h, 'AlphaData', Plane.Mask); set(ax, 'Color', 'k'); 
+h = imagesc(Plane.error_N_angle_sp_orth); set(h, 'AlphaData', Plane.Mask); set(ax, 'Color', 'w'); 
 axis equal; axis([0, col, 0, row]);
 set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(ax,'LineWidth', plotParameter.LineWidth );
@@ -73,7 +73,7 @@ title('Orth.', 'FontSize', plotParameter.FontSize * plotParameter.Scale, 'FontNa
 % IJCV
 figPlaneIJCV = figure('Position', [100, 100, 620, 420]);
 ax = axes(figPlaneIJCV);
-h = imagesc(Plane.error_N_angle_sp_IJCV); set(h, 'AlphaData', Plane.Mask); set(ax, 'Color', 'k'); 
+h = imagesc(Plane.error_N_angle_sp_IJCV); set(h, 'AlphaData', Plane.Mask); set(ax, 'Color', 'w'); 
 axis equal; axis([0, col, 0, row]);
 set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(ax,'LineWidth', plotParameter.LineWidth );
@@ -97,7 +97,7 @@ exportgraphics(figPlaneIJCV, 'fig_Error_Normal_Plane_Specular_IJCV.png', 'Resolu
 % perspective
 figHemispherePers = figure('Position', [100, 100, 620, 420]);
 ax = axes(figHemispherePers);
-h = imagesc(Hemisphere.error_N_angle_sp); set(h, 'AlphaData', Hemisphere.Mask); set(ax, 'Color', 'k'); 
+h = imagesc(Hemisphere.error_N_angle_sp); set(h, 'AlphaData', Hemisphere.Mask); set(ax, 'Color', 'w'); 
 axis equal; axis([0, col, 0, row]);
 set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale , 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(gca,'LineWidth', plotParameter.LineWidth );
@@ -108,7 +108,7 @@ title('Ours', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontNa
 % orthographic 
 figHemisphereOrth = figure('Position', [100, 100, 620, 420]);
 ax = axes(figHemisphereOrth);
-h = imagesc(Hemisphere.error_N_angle_sp_orth); set(h, 'AlphaData', Hemisphere.Mask); set(ax, 'Color', 'k'); 
+h = imagesc(Hemisphere.error_N_angle_sp_orth); set(h, 'AlphaData', Hemisphere.Mask); set(ax, 'Color', 'w'); 
 axis equal; axis([0, col, 0, row]);
 set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(ax,'LineWidth', plotParameter.LineWidth );
@@ -119,7 +119,7 @@ title('Orth.', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontN
 % IJCV
 figHemisphereIJCV = figure('Position', [100, 100, 620, 420]);
 ax = axes(figHemisphereIJCV);
-h = imagesc(Hemisphere.error_N_angle_sp_IJCV); set(h, 'AlphaData', Hemisphere.Mask); set(ax, 'Color', 'k'); 
+h = imagesc(Hemisphere.error_N_angle_sp_IJCV); set(h, 'AlphaData', Hemisphere.Mask); set(ax, 'Color', 'w'); 
 axis equal; axis([0, col, 0, row]);
 set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(ax,'LineWidth', plotParameter.LineWidth );
@@ -143,7 +143,7 @@ exportgraphics(figHemisphereIJCV, 'fig_Error_Normal_Hemisphere_Specular_IJCV.png
 % perspective
 figRandomPers = figure('Position', [100, 100, 620, 420]);
 ax = axes(figRandomPers);
-h = imagesc(Random.error_N_angle_sp); set(h, 'AlphaData', Random.Mask); set(ax, 'Color', 'k'); 
+h = imagesc(Random.error_N_angle_sp); set(h, 'AlphaData', Random.Mask); set(ax, 'Color', 'w'); 
 axis equal; axis([0, col, 0, row]);
 set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize , 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(gca,'LineWidth', plotParameter.LineWidth );
@@ -154,7 +154,7 @@ title('Ours', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontNa
 % orthographic 
 figRandomOrth = figure('Position', [100, 100, 620, 420]);
 ax = axes(figRandomOrth);
-h = imagesc(Random.error_N_angle_sp_orth); set(h, 'AlphaData', Random.Mask); set(ax, 'Color', 'k'); 
+h = imagesc(Random.error_N_angle_sp_orth); set(h, 'AlphaData', Random.Mask); set(ax, 'Color', 'w'); 
 axis equal; axis([0, col, 0, row]);
 set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(ax,'LineWidth', plotParameter.LineWidth );
@@ -165,7 +165,7 @@ title('Orth.', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontN
 % IJCV
 figRandomIJCV = figure('Position', [100, 100, 620, 420]);
 ax = axes(figRandomIJCV);
-h = imagesc(Random.error_N_angle_sp_IJCV); set(h, 'AlphaData', Random.Mask); set(ax, 'Color', 'k'); 
+h = imagesc(Random.error_N_angle_sp_IJCV); set(h, 'AlphaData', Random.Mask); set(ax, 'Color', 'w'); 
 axis equal; axis([0, col, 0, row]);
 set(ax, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
 set(ax,'LineWidth', plotParameter.LineWidth );

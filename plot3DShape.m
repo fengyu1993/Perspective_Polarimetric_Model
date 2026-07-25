@@ -1,14 +1,24 @@
 %% plot 3D Normal RGB
 function plot3DShape(fig, N, Mask)
-    Nx = N(:,:,1);
+Nx = N(:,:,1);
     Ny = N(:,:,2);
     Nz = N(:,:,3);
+    
     R = (Nx + 1) / 2;
     G = (Ny + 1) / 2;
     B = (Nz + 1) / 2; 
+    
     Normal_RGB = cat(3, R, G, B);
     Mask_3D = repmat(Mask, [1, 1, 3]); 
-    Normal_RGB(~Mask_3D) = NaN;
+    Normal_RGB(~Mask_3D) = 1;
+
+    borderWidth = 6; 
+    
+    Normal_RGB(1:borderWidth, :, :) = 0;           
+    Normal_RGB(end-borderWidth+1:end, :, :) = 0; 
+    Normal_RGB(:, 1:borderWidth, :) = 0;          
+    Normal_RGB(:, end-borderWidth+1:end, :) = 0; 
+    
     figure(fig);
     imshow(Normal_RGB);
 end
