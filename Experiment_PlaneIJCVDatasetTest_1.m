@@ -14,7 +14,6 @@ eta_list = linspace(1.3, 1.7, num_ETA);
 error_all_N_angle = NaN(num_ETA, num_A);
 error_all_N_angle_orth = NaN(num_ETA, num_A);
 error_all_N_angle_IJCV = NaN(num_ETA, num_A);
-sumMask = zeros(row, col);
 for a_cnt = 1 : length(a_list)
     a = a_list(a_cnt);
     for eta_cnt = 1 : length(eta_list)
@@ -22,8 +21,9 @@ for a_cnt = 1 : length(a_list)
         err_plot = zeros(row, col);
         err_plot_orth = zeros(row, col);
         err_plot_IJCV = zeros(row, col);
+        sumMask = zeros(row, col);
         for i = 1 : length(name)
-            fprintf('Processing Image a_cnt = %i, k = %i, eta_cnt =  %i/%i...\n', a_cnt, eta_cnt, i, length(name));
+            fprintf('Processing Image a_cnt = %i, eta_cnt = %i, k =  %i/%i...\n', a_cnt, eta_cnt, i, length(name));
             %% Data 
             % polarimetric image
             polarImage = readPolarimetricImage(location, name{i}); 

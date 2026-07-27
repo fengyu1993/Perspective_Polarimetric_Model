@@ -13,7 +13,7 @@ Beta = getPerspectiveDistortionAngle(V, Mask);
 Beta_orth = zeros(size(Beta));
 Psi = getPsiAngle(V, Mask);
 % normal vector
-flag = 3;
+flag = 2;
 if flag == 1 % plane
     [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectivePlane(V, row, col, K);
 elseif flag == 2 % hemisphere
