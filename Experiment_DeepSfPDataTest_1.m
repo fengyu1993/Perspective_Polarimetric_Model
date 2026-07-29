@@ -9,7 +9,7 @@ V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
 Beta_orth = zeros(row, col); 
 mask = ones(row, col);  Mask = mask == 1;
 %%
-num_A = 30;
+num_A = 2;
 a_list = linspace(0.1, 0.9, num_A);
 eta = 1.5;
 f_xy_list = [1159, 1739, 2319, 3478, 4638];
@@ -28,7 +28,7 @@ for caseNum = 1 : length(index.name)
         a = a_list(a_cnt);
         for f_cnt = 1 : length(f_xy_list)
             f_xy = f_xy_list(f_cnt);
-            K = [f_xy, 0, 612; 0, f_xy, 512; 0, 0, 1];
+            K = [-f_xy, 0, 612; 0, f_xy, 512; 0, 0, 1];
             err_plot = zeros(row, col);
             err_plot_orth = zeros(row, col);
             err_plot_IJCV = zeros(row, col);
@@ -42,9 +42,9 @@ for caseNum = 1 : length(index.name)
                 Beta = getPerspectiveDistortionAngle(V, Mask);
                 %% Methods
                 % Perspective 
-                N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask);
+                N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
                 % Orthographic 
-                N_orth = get_Perspective_SurfaceNormal(polarImage, Beta_orth, V_orth, eta, a, Mask);
+                N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
                 %% Error
                 error_n = getErrorNormalAngle(N, N_desired, Mask);
                 error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
@@ -182,6 +182,7 @@ function [polarImage, Mask, N_desired] = readDeepSfPData(location, name)
     polarImage.I135 = data.images(:,:,4);
     Mask = data.mask == 1;
     N_desired = data.normals_gt;
+    N_desired(:,:,2) = -N_desired(:,:,2);
     N_desired(:,:,3) = -N_desired(:,:,3);
 end
 

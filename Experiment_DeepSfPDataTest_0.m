@@ -4,6 +4,13 @@ clc; clear; close all;
 [location, name] = get_name_DeepSfP();
 index = get_DeepSfP_test_name(name);
 %% 
+row = 1024; col = 1224;
+V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
+Beta_orth = zeros(row, col); 
+f_xy = 2319;
+K = [-f_xy, 0, 612; 0, f_xy, 512; 0, 0, 1];
+eta = 1.5;
+a = 0.6;
 for caseNum = 6 % : length(index.name)
     caseName = index.name{caseNum};
     rangeIndoorNum = index.indoorNumber{caseNum};
@@ -14,12 +21,38 @@ for caseNum = 6 % : length(index.name)
         fprintf('Processing Image Indoor: case = %s, image = %s ...\n', caseName, name.indoor{rangeIndoorNum(i)});
         %% Data 
         [polarImage, Mask, N_desired] = readDeepSfPData(location.indoor, name.indoor{rangeIndoorNum(i)});
+%         [polarImage, Mask, N_desired] = readDeepSfPData(location.indoor, 'boll_.mat');
         figure;
         subplot(2, 3, 1); imshow(polarImage.I0);
         subplot(2, 3, 2); imshow(polarImage.I45);
         subplot(2, 3, 3); imshow(polarImage.I90);
         subplot(2, 3, 4); imshow(polarImage.I135);
         subplot(2, 3, 5); imshow(Mask);
+        %% Estimate
+        V = getViewingDirection(K, Mask);  
+        Beta = getPerspectiveDistortionAngle(V, Mask);
+        % Perspective 
+        N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
+        % Orthographic 
+        N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
+        %% Error
+        error_n = getErrorNormalAngle(N, N_desired, Mask);
+        error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);         
+        %% Refine
+        N = getRefinedSurfaceNormal(N, N_desired);
+        N_orth = getRefinedSurfaceNormal(N_orth, N_desired);
+
+        error_n_ = getErrorNormalAngle(N, N_desired, Mask);
+        error_n_orth_ = getErrorNormalAngle(N_orth, N_desired, Mask); 
+
+        %% Plot
+        fig_desired = figure;
+        plot3DShape(fig_desired, N_desired, Mask);
+        fig = figure;
+        plot3DShape(fig, N, Mask);
+        fig_orth = figure;
+        plot3DShape(fig_orth, N_orth, Mask);
+
     end
     %% Outdoor Cloudy
     for i = 1 : length(rangeOutdoorCloudyNum)             
