@@ -1,4 +1,4 @@
-%% Real Data (DeepSfP Dataset) Complex Surfaces Comparision
+%% Real Data (DeepSfP Dataset) Complex Surfaces Comparision: save spdp_2 data
 clc; clear; close all;
 %%
 [location, name] = get_name_DeepSfP();
@@ -16,7 +16,6 @@ f_xy_list = [1159, 1739, 2319, 3478, 4638];
 num_F = length(f_xy_list);
 [A, F_XY] = meshgrid(a_list, f_xy_list);
 %% 
-flag_method = 1; % 2
 for flag_case = 1 : 3
 for caseNum = 1 : length(index.name)
     caseName = index.name{caseNum};
@@ -44,19 +43,8 @@ for caseNum = 1 : length(index.name)
                         [polarImage, Mask, N_desired] = readDeepSfPData(location.indoor, name.indoor{rangeIndoorNum(i)});
                         V = getViewingDirection(K, Mask);  
                         Beta = getPerspectiveDistortionAngle(V, Mask);
-                        if flag_method == 1
-                            %% Methods Specular
-                            % Perspective 
-                            N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
-                            % Orthographic 
-                            N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
-                        else
-                            %% Methods Diffuse
-                            % Perspective 
-                            N = getSurfaceNormalFromDiffuseReflection(polarImage, Beta, V, eta, a, Mask);
-                            % Orthographic 
-                            N_orth = getSurfaceNormalFromDiffuseReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
-                        end
+                        N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask);
+                        N_orth = get_Perspective_SurfaceNormal(polarImage, Beta_orth, V_orth, eta, a, Mask);
                         %% Error
                         error_n = getErrorNormalAngle(N, N_desired, Mask);
                         error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
@@ -73,19 +61,8 @@ for caseNum = 1 : length(index.name)
                         [polarImage, Mask, N_desired] = readDeepSfPData(location.outdoor_cloudy, name.outdoor_cloudy{rangeOutdoorCloudyNum(i)});
                         V = getViewingDirection(K, Mask);  
                         Beta = getPerspectiveDistortionAngle(V, Mask);
-                        if flag_method == 1
-                            %% Methods Specular
-                            % Perspective 
-                            N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
-                            % Orthographic 
-                            N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
-                        else
-                            %% Methods Diffuse
-                            % Perspective 
-                            N = getSurfaceNormalFromDiffuseReflection(polarImage, Beta, V, eta, a, Mask);
-                            % Orthographic 
-                            N_orth = getSurfaceNormalFromDiffuseReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
-                        end    
+                        N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask);
+                        N_orth = get_Perspective_SurfaceNormal(polarImage, Beta_orth, V_orth, eta, a, Mask);    
                         %% Error
                         error_n = getErrorNormalAngle(N, N_desired, Mask);
                         error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
@@ -102,19 +79,8 @@ for caseNum = 1 : length(index.name)
                         [polarImage, Mask, N_desired] = readDeepSfPData(location.outdoor_sunny, name.outdoor_sunny{rangeOutdoorSunnyNum(i)});
                         V = getViewingDirection(K, Mask);  
                         Beta = getPerspectiveDistortionAngle(V, Mask);
-                        if flag_method == 1
-                            %% Methods Specular
-                            % Perspective 
-                            N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
-                            % Orthographic 
-                            N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
-                        else
-                            %% Methods Diffuse
-                            % Perspective 
-                            N = getSurfaceNormalFromDiffuseReflection(polarImage, Beta, V, eta, a, Mask);
-                            % Orthographic 
-                            N_orth = getSurfaceNormalFromDiffuseReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
-                        end  
+                        N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask);
+                        N_orth = get_Perspective_SurfaceNormal(polarImage, Beta_orth, V_orth, eta, a, Mask);
                         %% Error
                         error_n = getErrorNormalAngle(N, N_desired, Mask);
                         error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
@@ -143,29 +109,18 @@ for caseNum = 1 : length(index.name)
     xlabel('a'); ylabel('f'); zlabel('Mean Error');
     %%
     switch flag_case
-        case 1    
-            if flag_method == 1
-                saveName = ['./Data/Data_DeepSfP_dataset_indoor_', caseName ,'_test_A_FXY_sp.mat'];
-            else
-                saveName = ['./Data/Data_DeepSfP_dataset_indoor_', caseName ,'_test_A_FXY_dp.mat'];
-            end
+        case 1   
+            saveName = ['./Data/Data_DeepSfP_dataset_indoor_', caseName ,'_test_A_FXY_spdp_2.mat'];
         case 2
-            if flag_method == 1
-                saveName = ['./Data/Data_DeepSfP_dataset_outdoor_cloudy_', caseName ,'_test_A_FXY_sp.mat'];
-            else
-                saveName = ['./Data/Data_DeepSfP_dataset_outdoor_cloudy_', caseName ,'_test_A_FXY_dp.mat'];
-            end
+            saveName = ['./Data/Data_DeepSfP_dataset_outdoor_cloudy_', caseName ,'_test_A_FXY_spdp_2.mat'];
         case 3
-            if flag_method == 1
-                saveName = ['./Data/Data_DeepSfP_dataset_outdoor_sunny_', caseName ,'_test_A_FXY_sp.mat'];
-            else
-                saveName = ['./Data/Data_DeepSfP_dataset_outdoor_sunny_', caseName ,'_test_A_FXY_dp.mat'];    
-            end
+            saveName = ['./Data/Data_DeepSfP_dataset_outdoor_sunny_', caseName ,'_test_A_FXY_spdp_2.mat'];
     end
     save(saveName, 'A', 'F_XY', 'error_all_N_angle', 'error_all_N_angle_orth');
     fprintf('save %s\n', saveName);
 end
 end
+
 
 
 % figure; 
@@ -248,15 +203,27 @@ function index = get_DeepSfP_test_name(name)
 end
 
 function N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask)
-    Rho = getDoLP(polarImage, Mask);
-    Theta_sp = getZenithAngleSpecularReflection(Rho ./ a, Mask, Beta, eta);
-    Phi = getAzimuthAngleDiffuseReflection(polarImage, Mask);
-    N.sp1dp1 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp1, Mask);
-    N.sp1dp2 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp2, Mask);
-    N.sp1dp3 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp3, Mask);
-    N.sp1dp4 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp4, Mask);
-    N.sp2dp1 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp1, Mask);
-    N.sp2dp2 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp2, Mask);
-    N.sp2dp3 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp3, Mask);
-    N.sp2dp4 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp4, Mask); 
+    %% spdp
+%     Rho = getDoLP(polarImage, Mask);
+%     Theta_sp = getZenithAngleSpecularReflection(Rho ./ a, Mask, Beta, eta);
+%     Phi = getAzimuthAngleDiffuseReflection(polarImage, Mask);
+%     N.sp1dp1 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp1, Mask);
+%     N.sp1dp2 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp2, Mask);
+%     N.sp1dp3 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp3, Mask);
+%     N.sp1dp4 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp4, Mask);
+%     N.sp2dp1 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp1, Mask);
+%     N.sp2dp2 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp2, Mask);
+%     N.sp2dp3 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp3, Mask);
+%     N.sp2dp4 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp4, Mask); 
+    %% spdp_2
+    N_1 = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
+    N_2 = getSurfaceNormalFromDiffuseReflection(polarImage, Beta, V, eta, a, Mask);
+    N.sp1 = N_1.sp1;
+    N.sp2 = N_1.sp2;
+    N.sp3 = N_1.sp3;
+    N.sp4 = N_1.sp4;
+    N.dp1 = N_2.dp1;
+    N.dp2 = N_2.dp2;
+    N.dp3 = N_2.dp3;
+    N.dp4 = N_2.dp4;
 end

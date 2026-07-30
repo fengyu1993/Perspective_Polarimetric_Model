@@ -1,8 +1,8 @@
 %% plot 3D Normal RGB
 function plot3DShape(fig, N, Mask)
     Nx = N(:,:,1);
-    Ny = -N(:,:,2);
-    Nz = -N(:,:,3);
+    Ny = N(:,:,2);
+    Nz = N(:,:,3);
     
     R = (Nx + 1) / 2;
     G = (Ny + 1) / 2;

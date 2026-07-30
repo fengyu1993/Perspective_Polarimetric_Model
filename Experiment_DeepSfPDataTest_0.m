@@ -8,10 +8,10 @@ row = 1024; col = 1224;
 V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
 Beta_orth = zeros(row, col); 
 f_xy = 2319;
-K = [-f_xy, 0, 612; 0, f_xy, 512; 0, 0, 1];
+K = [f_xy, 0, 612; 0, -f_xy, 512; 0, 0, 1];
 eta = 1.5;
 a = 0.6;
-for caseNum = 6 % : length(index.name)
+for caseNum = 4 % : length(index.name)
     caseName = index.name{caseNum};
     rangeIndoorNum = index.indoorNumber{caseNum};
     rangeOutdoorCloudyNum = index.outdoorCloudyNumber{caseNum};
@@ -21,7 +21,7 @@ for caseNum = 6 % : length(index.name)
         fprintf('Processing Image Indoor: case = %s, image = %s ...\n', caseName, name.indoor{rangeIndoorNum(i)});
         %% Data 
         [polarImage, Mask, N_desired] = readDeepSfPData(location.indoor, name.indoor{rangeIndoorNum(i)});
-%         [polarImage, Mask, N_desired] = readDeepSfPData(location.indoor, 'boll_.mat');
+        [polarImage, Mask, N_desired] = readDeepSfPData(location.indoor, 'boll_.mat');
         figure;
         subplot(2, 3, 1); imshow(polarImage.I0);
         subplot(2, 3, 2); imshow(polarImage.I45);
@@ -29,22 +29,28 @@ for caseNum = 6 % : length(index.name)
         subplot(2, 3, 4); imshow(polarImage.I135);
         subplot(2, 3, 5); imshow(Mask);
         %% Estimate
-        V = getViewingDirection(K, Mask);  
-        Beta = getPerspectiveDistortionAngle(V, Mask);
+        Mask_ = ones(row, col) == 1;
+        V = getViewingDirection(K, Mask_);  
+        Beta = getPerspectiveDistortionAngle(V, Mask_);
         % Perspective 
         N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
+        N.sp1 = -N.sp1;   N.sp2 = -N.sp2;
+        N.sp3 = -N.sp3;   N.sp4 = -N.sp4;
         % Orthographic 
         N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
+        N_orth.sp1 = -N_orth.sp1;   N_orth.sp2 = -N_orth.sp2;
+        N_orth.sp3 = -N_orth.sp3;   N_orth.sp4 = -N_orth.sp4;
         %% Error
         error_n = getErrorNormalAngle(N, N_desired, Mask);
         error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);         
         %% Refine
         N = getRefinedSurfaceNormal(N, N_desired);
+        N(:,:,3) = -N(:,:,3);   
         N_orth = getRefinedSurfaceNormal(N_orth, N_desired);
+        N_orth(:,:,3) = -N_orth(:,:,3); 
 
-        error_n_ = getErrorNormalAngle(N, N_desired, Mask);
-        error_n_orth_ = getErrorNormalAngle(N_orth, N_desired, Mask); 
-
+        mean(error_n(Mask))
+        mean(error_n_orth(Mask))
         %% Plot
         fig_desired = figure;
         plot3DShape(fig_desired, N_desired, Mask);
@@ -52,7 +58,6 @@ for caseNum = 6 % : length(index.name)
         plot3DShape(fig, N, Mask);
         fig_orth = figure;
         plot3DShape(fig_orth, N_orth, Mask);
-
     end
     %% Outdoor Cloudy
     for i = 1 : length(rangeOutdoorCloudyNum)             
@@ -109,7 +114,6 @@ function [polarImage, Mask, N_desired] = readDeepSfPData(location, name)
     polarImage.I135 = data.images(:,:,4);
     Mask = data.mask == 1;
     N_desired = data.normals_gt;
-    N_desired(:,:,3) = -N_desired(:,:,3);
 end
 
 function index = get_DeepSfP_test_name(name)
@@ -123,4 +127,3 @@ function index = get_DeepSfP_test_name(name)
         index.outdoorSunnyNumber{i} = find(startsWith(name.outdoor_sunny, index.name(i), 'IgnoreCase', true));  
     end
 end
-

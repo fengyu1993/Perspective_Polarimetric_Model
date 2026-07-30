@@ -29,6 +29,7 @@ for i = 1 : length(name)
         rays(rows(cut), cols(cut), :) = v / norm(v);
     end
     V = -rays;
+    V(:,:,1) = -V(:,:,1);
     % Beta
     Beta = getPerspectiveDistortionAngle(V, Mask);
     % normal
@@ -38,10 +39,16 @@ for i = 1 : length(name)
     %% Methods
     % Perspective 
     N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
+    N.sp1(:,:,1) = -N.sp1(:,:,1);   N.sp2(:,:,1) = -N.sp2(:,:,1);
+    N.sp3(:,:,1) = -N.sp3(:,:,1);   N.sp4(:,:,1) = -N.sp4(:,:,1);
     % Orthographic 
     N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
+    N_orth.sp1(:,:,1) = -N_orth.sp1(:,:,1);   N_orth.sp2(:,:,1) = -N_orth.sp2(:,:,1);
+    N_orth.sp3(:,:,1) = -N_orth.sp3(:,:,1);   N_orth.sp4(:,:,1) = -N_orth.sp4(:,:,1);
     % IJCV 
     N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(polarImage, V, eta, a, Mask);
+    N_IJCV.sp1(:,:,1) = -N_IJCV.sp1(:,:,1);   N_IJCV.sp2(:,:,1) = -N_IJCV.sp2(:,:,1);
+    N_IJCV.sp3(:,:,1) = -N_IJCV.sp3(:,:,1);   N_IJCV.sp4(:,:,1) = -N_IJCV.sp4(:,:,1);
     %% Error
     error_n = getErrorNormalAngle(N, N_desired, Mask);
     error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
@@ -113,14 +120,9 @@ function polarImage = readPolarimetricImage(location_image, name_image)
     end
     imgRaw = double(imgRaw);
     %
-%     polarImage.I90  = imgRaw(1:2:end, 1:2:end); 
-%     polarImage.I45  = imgRaw(1:2:end, 2:2:end); 
-%     polarImage.I135 = imgRaw(2:2:end, 1:2:end); 
-%     polarImage.I0   = imgRaw(2:2:end, 2:2:end);
-     % 
     polarImage.I90  = imgRaw(1:2:end, 1:2:end); 
-    polarImage.I135  = imgRaw(1:2:end, 2:2:end); 
-    polarImage.I45 = imgRaw(2:2:end, 1:2:end); 
+    polarImage.I45  = imgRaw(1:2:end, 2:2:end); 
+    polarImage.I135 = imgRaw(2:2:end, 1:2:end); 
     polarImage.I0   = imgRaw(2:2:end, 2:2:end);   
 end
 function [extrinsic, intrinsic, last_data] = read_data(location_camera, name_camera)
@@ -130,16 +132,12 @@ function [extrinsic, intrinsic, last_data] = read_data(location_camera, name_cam
     else
         error('文件不存在，请检查路径。');
     end
-    % --- 提取 Extrinsic ---
-    fgetl(fileID); % 跳过 "extrinsic"
+    fgetl(fileID); 
     extrinsic = cell2mat(textscan(fileID, '%f %f %f %f', 4)); 
-    % --- 关键步骤：动态跳过直到看见 "intrinsic" ---
     line = '';
     while ~contains(line, 'intrinsic') && ~feof(fileID)
         line = fgetl(fileID);
     end
-    % --- 提取 Intrinsic ---
-    % 此时指针已经在 "intrinsic" 这一行之后，直接读取 3x3 矩阵
     intrinsic = cell2mat(textscan(fileID, '%f %f %f', 3));
     fgetl(fileID);
     last_data = cell2mat(textscan(fileID, '%f %f %f %f', 1));

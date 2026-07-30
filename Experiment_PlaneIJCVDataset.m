@@ -21,6 +21,7 @@ for i = 1 : length(name)
     Mask = load([location, name{i}, '_mask.mat']).data == 1;
     % V
     V = -load([location, 'our_rays.mat']).data; 
+    V(:,:,1) = -V(:,:,1);
     % Beta
     Beta = getPerspectiveDistortionAngle(V, Mask);
     % normal
@@ -30,10 +31,16 @@ for i = 1 : length(name)
     %% Methods
     % Perspective 
     N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
+    N.sp1(:,:,1) = -N.sp1(:,:,1);   N.sp2(:,:,1) = -N.sp2(:,:,1);
+    N.sp3(:,:,1) = -N.sp3(:,:,1);   N.sp4(:,:,1) = -N.sp4(:,:,1);
     % Orthographic 
     N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
+    N_orth.sp1(:,:,1) = -N_orth.sp1(:,:,1);   N_orth.sp2(:,:,1) = -N_orth.sp2(:,:,1);
+    N_orth.sp3(:,:,1) = -N_orth.sp3(:,:,1);   N_orth.sp4(:,:,1) = -N_orth.sp4(:,:,1);
     % IJCV 
     N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(polarImage, V, eta, a, Mask);
+    N_IJCV.sp1(:,:,1) = -N_IJCV.sp1(:,:,1);   N_IJCV.sp2(:,:,1) = -N_IJCV.sp2(:,:,1);
+    N_IJCV.sp3(:,:,1) = -N_IJCV.sp3(:,:,1);   N_IJCV.sp4(:,:,1) = -N_IJCV.sp4(:,:,1);
     %% Error
     error_n = getErrorNormalAngle(N, N_desired, Mask);
     error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
@@ -106,16 +113,10 @@ function polarImage = readPolarimetricImage(location_image, name_image)
     end
     imgRaw = double(imgRaw);
     %
-%     polarImage.I90  = imgRaw(1:2:end, 1:2:end); 
-%     polarImage.I45  = imgRaw(1:2:end, 2:2:end); 
-%     polarImage.I135 = imgRaw(2:2:end, 1:2:end); 
-%     polarImage.I0   = imgRaw(2:2:end, 2:2:end);
- 
-     % 
     polarImage.I90  = imgRaw(1:2:end, 1:2:end); 
-    polarImage.I135  = imgRaw(1:2:end, 2:2:end); 
-    polarImage.I45 = imgRaw(2:2:end, 1:2:end); 
-    polarImage.I0   = imgRaw(2:2:end, 2:2:end);   
+    polarImage.I45  = imgRaw(1:2:end, 2:2:end); 
+    polarImage.I135 = imgRaw(2:2:end, 1:2:end); 
+    polarImage.I0   = imgRaw(2:2:end, 2:2:end);
 end
 
 
