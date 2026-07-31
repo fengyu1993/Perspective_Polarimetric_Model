@@ -10,30 +10,27 @@ Beta_orth = zeros(row, col);
 mask = ones(row, col);  Mask = mask == 1;
 %%
 eta = 1.5;
-% a_list = [0.24, 0.24, 0.11, 0.14, 0.29, 0.12];
-a_list = 0.24*ones(1, 6);
+a_list = [1, 0.24, 0.11, 0.14, 0.29, 0.11];
 f_xy = 3478;
 K = [f_xy, 0, 612; 0, -f_xy, 512; 0, 0, 1];
 %% 
-Err_pers = NaN(row, col, 6);
-Err_orth = NaN(row, col, 6);
-Mask_id= NaN(row, col, 6);
+Err_pers = NaN(row, col, 3, length(index.name));
+Err_orth = NaN(row, col, 3, length(index.name));
+Mask_sum = NaN(row, col, 3, length(index.name));
+ID = NaN(row, col, 3, length(index.name));
 %% 
-for caseNum = 1 : length(index.name)
-    a = a_list(caseNum);
-    err = zeros(row, col);
-    err_orth = zeros(row, col);
-    sumMask = zeros(row, col);
-    err_all = zeros(row, col);
-    err_orth_all = zeros(row, col);
-    sumMask_all = zeros(row, col);
-    for flag_case = 1 : 3
-        caseName = index.name{caseNum};
-        rangeIndoorNum = index.indoorNumber{caseNum};
-        rangeOutdoorCloudyNum = index.outdoorCloudyNumber{caseNum};
-        rangeOutdoorSunnyNum = index.outdoorSunnyNumber{caseNum};
+for objectNum = 1 : length(index.name)
+    a = a_list(objectNum);
+    for caseNum = 1 : 3
+        caseName = index.name{objectNum};
+        rangeIndoorNum = index.indoorNumber{objectNum};
+        rangeOutdoorCloudyNum = index.outdoorCloudyNumber{objectNum};
+        rangeOutdoorSunnyNum = index.outdoorSunnyNumber{objectNum};
         %% test
-        switch flag_case
+        err = zeros(row, col);
+        err_orth = zeros(row, col);
+        sumMask = zeros(row, col);
+        switch caseNum
             case 1
                 %% Indoor
                 for i = 1 : length(rangeIndoorNum)             
@@ -42,8 +39,10 @@ for caseNum = 1 : length(index.name)
                     [polarImage, Mask, N_desired] = readDeepSfPData(location.indoor, name.indoor{rangeIndoorNum(i)});
                     V = getViewingDirection(K, Mask);  
                     Beta = getPerspectiveDistortionAngle(V, Mask);
-                    N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask);
-                    N_orth = get_Perspective_SurfaceNormal(polarImage, Beta_orth, V_orth, eta, a, Mask);
+                    N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
+                    N.sp1 = -N.sp1; N.sp2 = -N.sp2; N.sp3 = -N.sp3; N.sp4 = -N.sp4; 
+                    N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
+                    N_orth.sp1 = -N_orth.sp1; N_orth.sp2 = -N_orth.sp2; N_orth.sp3 = -N_orth.sp3; N_orth.sp4 = -N_orth.sp4; 
                     %% Error
                     error_n = getErrorNormalAngle(N, N_desired, Mask);
                     error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
@@ -51,9 +50,6 @@ for caseNum = 1 : length(index.name)
                     err(Mask) = err(Mask) + error_n(Mask);
                     err_orth(Mask) = err_orth(Mask) + error_n_orth(Mask);
                     sumMask(Mask) = sumMask(Mask) + 1;
-                    err_all(Mask) = err_all(Mask) + error_n(Mask);
-                    err_orth_all(Mask) = err_orth_all(Mask) + error_n_orth(Mask);
-                    sumMask_all(Mask) = sumMask_all(Mask) + 1;
                 end
             case 2
                 %% Outdoor Cloudy
@@ -63,8 +59,10 @@ for caseNum = 1 : length(index.name)
                     [polarImage, Mask, N_desired] = readDeepSfPData(location.outdoor_cloudy, name.outdoor_cloudy{rangeOutdoorCloudyNum(i)});
                     V = getViewingDirection(K, Mask);  
                     Beta = getPerspectiveDistortionAngle(V, Mask);
-                    N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask);
-                    N_orth = get_Perspective_SurfaceNormal(polarImage, Beta_orth, V_orth, eta, a, Mask);
+                    N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
+                    N.sp1 = -N.sp1; N.sp2 = -N.sp2; N.sp3 = -N.sp3; N.sp4 = -N.sp4; 
+                    N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
+                    N_orth.sp1 = -N_orth.sp1; N_orth.sp2 = -N_orth.sp2; N_orth.sp3 = -N_orth.sp3; N_orth.sp4 = -N_orth.sp4; 
                     %% Error
                     error_n = getErrorNormalAngle(N, N_desired, Mask);
                     error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
@@ -72,9 +70,6 @@ for caseNum = 1 : length(index.name)
                     err(Mask) = err(Mask) + error_n(Mask);
                     err_orth(Mask) = err_orth(Mask) + error_n_orth(Mask);
                     sumMask(Mask) = sumMask(Mask) + 1;
-                    err_all(Mask) = err_all(Mask) + error_n(Mask);
-                    err_orth_all(Mask) = err_orth_all(Mask) + error_n_orth(Mask);
-                    sumMask_all(Mask) = sumMask_all(Mask) + 1;
                 end
             case 3
                 %% Outdoor Sunny
@@ -84,8 +79,10 @@ for caseNum = 1 : length(index.name)
                     [polarImage, Mask, N_desired] = readDeepSfPData(location.outdoor_sunny, name.outdoor_sunny{rangeOutdoorSunnyNum(i)});
                     V = getViewingDirection(K, Mask);  
                     Beta = getPerspectiveDistortionAngle(V, Mask);
-                    N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask);
-                    N_orth = get_Perspective_SurfaceNormal(polarImage, Beta_orth, V_orth, eta, a, Mask);
+                    N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
+                    N.sp1 = -N.sp1; N.sp2 = -N.sp2; N.sp3 = -N.sp3; N.sp4 = -N.sp4; 
+                    N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
+                    N_orth.sp1 = -N_orth.sp1; N_orth.sp2 = -N_orth.sp2; N_orth.sp3 = -N_orth.sp3; N_orth.sp4 = -N_orth.sp4; 
                     %% Error
                     error_n = getErrorNormalAngle(N, N_desired, Mask);
                     error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
@@ -93,37 +90,35 @@ for caseNum = 1 : length(index.name)
                     err(Mask) = err(Mask) + error_n(Mask);
                     err_orth(Mask) = err_orth(Mask) + error_n_orth(Mask);
                     sumMask(Mask) = sumMask(Mask) + 1;
-                    err_all(Mask) = err_all(Mask) + error_n(Mask);
-                    err_orth_all(Mask) = err_orth_all(Mask) + error_n_orth(Mask);
-                    sumMask_all(Mask) = sumMask_all(Mask) + 1;
                 end
         end
-    end
-    %% Statistics
-    id = sumMask > 0;
-    err_mean = err ./ sumMask;
-    err_orth_mean = err_orth ./ sumMask;
-    %% Record
-    Err_pers(:,:, caseNum) = err_mean;
-    Err_orth(:,:, caseNum) = err_orth_mean;
-    Mask_id(:,:, caseNum) = id;    
+        Err_pers(:,:,caseNum, objectNum) = err;
+        Err_orth(:,:,caseNum, objectNum) = err_orth;
+        Mask_sum(:,:,caseNum, objectNum) = sumMask;
+        ID(:,:,caseNum, objectNum) = sumMask > 0;
+     end   
 end
 %% Statistics
-Mask_id_all = sumMask_all > 0;
-Err_pers_all = err_all(Mask_id_all) ./ sumMask_all(Mask_id_all);
-Err_orth_all = err_orth_all(Mask_id_all) ./ sumMask_all(Mask_id_all); 
-%%
-for caseNum = 1 : length(index.name)
-    err_pers = Err_pers(:,:, caseNum);
-    err_orth = Err_orth(:,:, caseNum);
-    mask = Mask_id(:,:, caseNum) == 1;
-    fprintf('%s: \n \t pers / orth --- %.3f, %.3f\n', index.name{caseNum}, rad2deg(mean(err_pers(mask))), rad2deg(mean(err_orth(mask))));
+casename = ["indoor", "outdoor_cloudy", "outdoor_sunny"];
+for objectNum = 1 : length(index.name)
+    fprintf("%s:\n", index.name(objectNum));
+    for caseNum = 1 : 3
+        fprintf("%s:\n\t\t\t Pers.\t\t Orth. \n", casename(caseNum));
+        err_pers = Err_pers(:,:,caseNum, objectNum);
+        err_orth = Err_orth(:,:,caseNum, objectNum);
+        mask_sum = Mask_sum(:,:,caseNum, objectNum);
+        id = ID(:,:,caseNum, objectNum) == 1;
+        err_sta =  rad2deg(err_pers(id) ./ mask_sum(id));
+        err_orth_sta = rad2deg(err_orth(id) ./ mask_sum(id));   
+        fprintf('\t MAE \t %.3f \t %.3f\n', mean(err_sta), mean(err_orth_sta));
+        fprintf('\t SD \t %.3f \t %.3f\n', std(err_sta), std(err_orth_sta));
+        fprintf('\t RMSE \t %.3f \t %.3f\n', sqrt(mean(err_sta.^2)), sqrt(mean(err_orth_sta.^2)));
+        fprintf('\t MAX \t %.3f \t %.3f\n', max(err_sta), max(err_orth_sta));
+    end
 end
-fprintf('Whole set: \n \t pers / orth --- %.3f, %.3f\n', rad2deg(mean(err_pers(mask))), rad2deg(mean(err_orth(mask))));
 %%
-name = index.name;
-save('./Data/Data_ExperimentPlaneDeepSfPDataset.mat', 'name', 'Mask_id', 'Mask_id_all',...
-    'Err_pers', 'Err_orth', 'Err_pers_all', 'Err_orth_all');
+save('./Data/Data_ExperimentPlaneDeepSfPDataset_pers_orth.mat', 'index', ...
+    'Err_pers', 'Err_orth', 'Mask_sum', 'ID');
 
 
 %%
@@ -162,19 +157,4 @@ function index = get_DeepSfP_test_name(name)
         index.outdoorCloudyNumber{i} = find(startsWith(name.outdoor_cloudy, index.name(i), 'IgnoreCase', true));
         index.outdoorSunnyNumber{i} = find(startsWith(name.outdoor_sunny, index.name(i), 'IgnoreCase', true));  
     end
-end
-
-function N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask)
-    %% spdp
-    Rho = getDoLP(polarImage, Mask);
-    Theta_sp = getZenithAngleSpecularReflection(Rho ./ a, Mask, Beta, eta);
-    Phi = getAzimuthAngleDiffuseReflection(polarImage, Mask);
-    N.sp1dp1 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp1, Mask);
-    N.sp1dp2 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp2, Mask);
-    N.sp1dp3 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp3, Mask);
-    N.sp1dp4 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp4, Mask);
-    N.sp2dp1 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp1, Mask);
-    N.sp2dp2 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp2, Mask);
-    N.sp2dp3 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp3, Mask);
-    N.sp2dp4 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp4, Mask); 
 end

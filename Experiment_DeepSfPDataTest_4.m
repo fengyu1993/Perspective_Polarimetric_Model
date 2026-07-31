@@ -10,7 +10,7 @@ otherName = ["Data_DeepSfP_dataset_", "test_A_FXY_", ".mat"];
 Err_pers = zeros(5, 35);
 Err_orth = zeros(5, 35);
 for methodNum = 3 : 3%length(methodName)
-    for objectNum = 1 : length(objectName)
+    for objectNum = 5 : length(objectName)
         for caseNum = 1 : length(caseName)
             fprintf("%s -- %s -- %s\n", caseName(caseNum), objectName(objectNum), methodName(methodNum));
             data = load([location, char(otherName(1)), char(caseName(caseNum)), '_', char(objectName(objectNum)), '_', char(otherName(2)), char(methodName(methodNum)), char(otherName(3))]);
@@ -82,7 +82,30 @@ for methodNum = 3 : 3%length(methodName)
     end
 end
 fprintf("Ours / Orthographic: %.3f, %.3f\n", rad2deg(mean(Err_pers(:))), rad2deg(mean(Err_orth(:))));
+%% Object
+Err_pers = zeros(5, 35);
+Err_orth = zeros(5, 35);
+for methodNum = 3 : 3%length(methodName)
+    for objectNum = 1 : length(objectName)
+        for caseNum = 1 : length(caseName)
+            fprintf("%s -- %s -- %s\n", caseName(caseNum), objectName(objectNum), methodName(methodNum));
+            data = load([location, char(otherName(1)), char(caseName(caseNum)), '_', char(objectName(objectNum)), '_', char(otherName(2)), char(methodName(methodNum)), char(otherName(3))]);
+            Err_pers = Err_pers + data.error_all_N_angle;
+            Err_orth = Err_orth + data.error_all_N_angle_orth;
+        end
+        Err_pers = Err_pers / length(caseName);
+        Err_orth = Err_orth / length(caseName);
+        figure; hold on; grid on;
+        %% plot
+        mesh(data.A, data.F_XY, rad2deg(Err_pers), 'EdgeColor', 'r'); 
+        mesh(data.A, data.F_XY, rad2deg(Err_orth), 'EdgeColor', 'g');
+        view([30,10]);
+        legend('Ours', 'Orthographic');
+        xlabel('a'); ylabel('f'); zlabel('Mean Error');
+        title(objectName(objectNum) + "  " + methodName(methodNum))
+    end
 
+end
 %% Case
 Err_pers = zeros(5, 35);
 Err_orth = zeros(5, 35);

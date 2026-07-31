@@ -4,19 +4,21 @@ clc; clear; close all;
 dataResult = load('./Data/Data_ExperimentPlaneDeepSfPDataset.mat');
 %%
 location = './Data/DeepSfPData/SurfaceNormals/objects/';
-caseName = ["indoor/", "indoor/", "outdoor_cloudy/", "outdoor_cloudy/", "outdoor_sunny/", "outdoor_sunny/"];
+caseName = ["indoor/", "outdoor_cloudy/", "indoor/", "outdoor_cloudy/", "outdoor_sunny/", "outdoor_sunny/"];
 objectName = ["box_l", "dragon_l", "father_christmas_f", "flamingo_queen_l", "horse_l", "vase2_l"];
 %%
 row = 1024; col = 1224;
 V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
 Beta_orth = zeros(row, col); 
 eta = 1.5;
-a_list = [0.24, 0.24, 0.11, 0.14, 0.29, 0.12];
+% a_list = [0.24, 0.24, 0.11, 0.14, 0.29, 0.12];
+a_list = [1, 0.24, 0.11, 0.14, 0.29, 0.11];
 % a_list = 0.24*ones(1, 6);
 f_xy = 3478;
 K = [f_xy, 0, 612; 0, -f_xy, 512; 0, 0, 1];
 %% Save Image
 for i = 1 : length(objectName)
+    fprintf("%s -- %s: \n", caseName(i), objectName(i));
     a = a_list(i);
     [polarImage, Mask, N_desired] = readDeepSfPData([location, char(caseName(i))], [char(objectName(i)), '.mat']);
     V = getViewingDirection(K, Mask);  
@@ -39,7 +41,7 @@ for i = 1 : length(objectName)
     plot3DShape(fig_pers, N, Mask);
     fullPath = fullfile('./imageDeepSfP', [char(objectName(i)), '_pers.png']);
     exportgraphics(fig_desired, fullPath, 'Resolution', 300);  
-    fprintf("Perspective MAE: %.3f degree\n", rad2deg(mean(error_normal(Mask))));
+    fprintf("\t Perspective MAE: %.3f degree\n", rad2deg(mean(error_normal(Mask))));
     %% Orthographic
     N_orth = get_Perspective_SurfaceNormal(polarImage, Beta_orth, V_orth, eta, a, Mask);
     N_orth = getRefinedSurfaceNormal(N_orth, N_desired);
@@ -48,7 +50,7 @@ for i = 1 : length(objectName)
     plot3DShape(fig_orth, N_orth, Mask);
     fullPath = fullfile('./imageDeepSfP', [char(objectName(i)), '_orth.png']);
     exportgraphics(fig_orth, fullPath, 'Resolution', 300);  
-    fprintf("Orthographic MAE: %.3f degree\n", rad2deg(mean(error_normal_orth(Mask))));
+    fprintf("\t Orthographic MAE: %.3f degree\n", rad2deg(mean(error_normal_orth(Mask))));
 end
 
 
