@@ -7,11 +7,13 @@ index = get_DeepSfP_test_name(name);
 row = 1024; col = 1224;
 V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
 Beta_orth = zeros(row, col); 
-f_xy = 2319;
-K = [f_xy, 0, 612; 0, -f_xy, 512; 0, 0, 1];
 eta = 1.5;
-a = 0.6;
-for caseNum = 4 % : length(index.name)
+a_list = [0.24, 0.24, 0.11, 0.14, 0.29, 0.12];
+% a_list = 0.24*ones(1, 6);
+f_xy = 3478;
+K = [f_xy, 0, 612; 0, -f_xy, 512; 0, 0, 1];
+for caseNum = 6 % : length(index.name)
+    a = a_list(caseNum);
     caseName = index.name{caseNum};
     rangeIndoorNum = index.indoorNumber{caseNum};
     rangeOutdoorCloudyNum = index.outdoorCloudyNumber{caseNum};
@@ -21,7 +23,6 @@ for caseNum = 4 % : length(index.name)
         fprintf('Processing Image Indoor: case = %s, image = %s ...\n', caseName, name.indoor{rangeIndoorNum(i)});
         %% Data 
         [polarImage, Mask, N_desired] = readDeepSfPData(location.indoor, name.indoor{rangeIndoorNum(i)});
-        [polarImage, Mask, N_desired] = readDeepSfPData(location.indoor, 'boll_.mat');
         figure;
         subplot(2, 3, 1); imshow(polarImage.I0);
         subplot(2, 3, 2); imshow(polarImage.I45);
@@ -49,8 +50,8 @@ for caseNum = 4 % : length(index.name)
         N_orth = getRefinedSurfaceNormal(N_orth, N_desired);
         N_orth(:,:,3) = -N_orth(:,:,3); 
 
-        mean(error_n(Mask))
-        mean(error_n_orth(Mask))
+        rad2deg(mean(error_n(Mask)))
+        rad2deg(mean(error_n_orth(Mask)))
         %% Plot
         fig_desired = figure;
         plot3DShape(fig_desired, N_desired, Mask);

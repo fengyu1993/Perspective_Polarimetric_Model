@@ -29,7 +29,7 @@ for caseNum = 1 : length(index.name)
         a = a_list(a_cnt);
         for f_cnt = 1 : length(f_xy_list)
             f_xy = f_xy_list(f_cnt);
-            K = [-f_xy, 0, 612; 0, f_xy, 512; 0, 0, 1];
+            K = [f_xy, 0, 612; 0, -f_xy, 512; 0, 0, 1];
             err_plot = zeros(row, col);
             err_plot_orth = zeros(row, col);
             err_plot_IJCV = zeros(row, col);
@@ -186,8 +186,6 @@ function [polarImage, Mask, N_desired] = readDeepSfPData(location, name)
     polarImage.I135 = data.images(:,:,4);
     Mask = data.mask == 1;
     N_desired = data.normals_gt;
-    N_desired(:,:,2) = -N_desired(:,:,2);
-    N_desired(:,:,3) = -N_desired(:,:,3);
 end
 
 function index = get_DeepSfP_test_name(name)
@@ -207,14 +205,14 @@ function N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask)
     Rho = getDoLP(polarImage, Mask);
     Theta_sp = getZenithAngleSpecularReflection(Rho ./ a, Mask, Beta, eta);
     Phi = getAzimuthAngleDiffuseReflection(polarImage, Mask);
-    N.sp1dp1 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp1, Mask);
-    N.sp1dp2 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp2, Mask);
-    N.sp1dp3 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp3, Mask);
-    N.sp1dp4 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp4, Mask);
-    N.sp2dp1 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp1, Mask);
-    N.sp2dp2 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp2, Mask);
-    N.sp2dp3 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp3, Mask);
-    N.sp2dp4 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp4, Mask); 
+    N.sp1dp1 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp1, Mask);
+    N.sp1dp2 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp2, Mask);
+    N.sp1dp3 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp3, Mask);
+    N.sp1dp4 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp4, Mask);
+    N.sp2dp1 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp1, Mask);
+    N.sp2dp2 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp2, Mask);
+    N.sp2dp3 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp3, Mask);
+    N.sp2dp4 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp4, Mask); 
     %% spdp_2
 %     N_1 = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
 %     N_2 = getSurfaceNormalFromDiffuseReflection(polarImage, Beta, V, eta, a, Mask);

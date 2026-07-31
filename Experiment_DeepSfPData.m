@@ -10,9 +10,10 @@ Beta_orth = zeros(row, col);
 mask = ones(row, col);  Mask = mask == 1;
 %%
 eta = 1.5;
-a_list = [0.79, 0.24, 0.11, 0.14, 0.29, 0.12];
+% a_list = [0.24, 0.24, 0.11, 0.14, 0.29, 0.12];
+a_list = 0.24*ones(1, 6);
 f_xy = 3478;
-K = [-f_xy, 0, 612; 0, f_xy, 512; 0, 0, 1];
+K = [f_xy, 0, 612; 0, -f_xy, 512; 0, 0, 1];
 %% 
 Err_pers = NaN(row, col, 6);
 Err_orth = NaN(row, col, 6);
@@ -63,7 +64,7 @@ for caseNum = 1 : length(index.name)
                     V = getViewingDirection(K, Mask);  
                     Beta = getPerspectiveDistortionAngle(V, Mask);
                     N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask);
-                    N_orth = get_Perspective_SurfaceNormal(polarImage, Beta_orth, V_orth, eta, a, Mask);    
+                    N_orth = get_Perspective_SurfaceNormal(polarImage, Beta_orth, V_orth, eta, a, Mask);
                     %% Error
                     error_n = getErrorNormalAngle(N, N_desired, Mask);
                     error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
@@ -119,7 +120,10 @@ for caseNum = 1 : length(index.name)
     fprintf('%s: \n \t pers / orth --- %.3f, %.3f\n', index.name{caseNum}, rad2deg(mean(err_pers(mask))), rad2deg(mean(err_orth(mask))));
 end
 fprintf('Whole set: \n \t pers / orth --- %.3f, %.3f\n', rad2deg(mean(err_pers(mask))), rad2deg(mean(err_orth(mask))));
-
+%%
+name = index.name;
+save('./Data/Data_ExperimentPlaneDeepSfPDataset.mat', 'name', 'Mask_id', 'Mask_id_all',...
+    'Err_pers', 'Err_orth', 'Err_pers_all', 'Err_orth_all');
 
 
 %%
@@ -146,8 +150,6 @@ function [polarImage, Mask, N_desired] = readDeepSfPData(location, name)
     polarImage.I135 = data.images(:,:,4);
     Mask = data.mask == 1;
     N_desired = data.normals_gt;
-    N_desired(:,:,2) = -N_desired(:,:,2);
-    N_desired(:,:,3) = -N_desired(:,:,3);
 end
 
 function index = get_DeepSfP_test_name(name)
@@ -167,23 +169,12 @@ function N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask)
     Rho = getDoLP(polarImage, Mask);
     Theta_sp = getZenithAngleSpecularReflection(Rho ./ a, Mask, Beta, eta);
     Phi = getAzimuthAngleDiffuseReflection(polarImage, Mask);
-    N.sp1dp1 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp1, Mask);
-    N.sp1dp2 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp2, Mask);
-    N.sp1dp3 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp3, Mask);
-    N.sp1dp4 = getSurfaceNormal(V, Theta_sp.sp1, Phi.dp4, Mask);
-    N.sp2dp1 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp1, Mask);
-    N.sp2dp2 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp2, Mask);
-    N.sp2dp3 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp3, Mask);
-    N.sp2dp4 = getSurfaceNormal(V, Theta_sp.sp2, Phi.dp4, Mask); 
-    %% spdp_2
-%     N_1 = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
-%     N_2 = getSurfaceNormalFromDiffuseReflection(polarImage, Beta, V, eta, a, Mask);
-%     N.sp1 = N_1.sp1;
-%     N.sp2 = N_1.sp2;
-%     N.sp3 = N_1.sp3;
-%     N.sp4 = N_1.sp4;
-%     N.dp1 = N_2.dp1;
-%     N.dp2 = N_2.dp2;
-%     N.dp3 = N_2.dp3;
-%     N.dp4 = N_2.dp4;
+    N.sp1dp1 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp1, Mask);
+    N.sp1dp2 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp2, Mask);
+    N.sp1dp3 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp3, Mask);
+    N.sp1dp4 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp4, Mask);
+    N.sp2dp1 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp1, Mask);
+    N.sp2dp2 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp2, Mask);
+    N.sp2dp3 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp3, Mask);
+    N.sp2dp4 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp4, Mask); 
 end
