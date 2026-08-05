@@ -10,7 +10,8 @@ Beta_orth = zeros(row, col);
 mask = ones(row, col);  Mask = mask == 1;
 %%
 eta = 1.5;
-a_list = [1, 0.24, 0.11, 0.14, 0.29, 0.11];
+% a_list = [1, 0.24, 0.11, 0.14, 0.29, 0.11];
+a_list = [1, 0.24, 0.14, 0.29];
 f_xy = 3478;
 K = [f_xy, 0, 612; 0, -f_xy, 512; 0, 0, 1];
 %% 
@@ -148,7 +149,8 @@ function [polarImage, Mask, N_desired] = readDeepSfPData(location, name)
 end
 
 function index = get_DeepSfP_test_name(name)
-    index.name = ["box"; "dragon"; "father_christmas"; "flamingo"; "horse"; "vase"];
+    index.name = ["box"; "dragon"; "father_christmas"; "flamingo"; "horse"; "vase"]; % a_list = [1, 0.24, 0.11, 0.14, 0.29, 0.11];
+    index.name = ["box"; "dragon"; "flamingo"; "horse"]; % a_list = [1, 0.24, 0.14, 0.29];
     index.indoorNumber = cell(length(index.name), 1);
     index.outdoor_cloudyNumber = cell(length(index.name), 1);
     index.outdoor_sunnyNumber = cell(length(index.name), 1);
@@ -157,4 +159,19 @@ function index = get_DeepSfP_test_name(name)
         index.outdoorCloudyNumber{i} = find(startsWith(name.outdoor_cloudy, index.name(i), 'IgnoreCase', true));
         index.outdoorSunnyNumber{i} = find(startsWith(name.outdoor_sunny, index.name(i), 'IgnoreCase', true));  
     end
+end
+
+function N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask)
+    %% spdp
+    Rho = getDoLP(polarImage, Mask);
+    Theta_sp = getZenithAngleSpecularReflection(Rho ./ a, Mask, Beta, eta);
+    Phi = getAzimuthAngleDiffuseReflection(polarImage, Mask);
+    N.sp1dp1 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp1, Mask);
+    N.sp1dp2 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp2, Mask);
+    N.sp1dp3 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp3, Mask);
+    N.sp1dp4 = -getSurfaceNormal(V, Theta_sp.sp1, Phi.dp4, Mask);
+    N.sp2dp1 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp1, Mask);
+    N.sp2dp2 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp2, Mask);
+    N.sp2dp3 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp3, Mask);
+    N.sp2dp4 = -getSurfaceNormal(V, Theta_sp.sp2, Phi.dp4, Mask); 
 end

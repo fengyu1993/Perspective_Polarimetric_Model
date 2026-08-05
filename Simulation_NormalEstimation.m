@@ -4,7 +4,7 @@ clc; clear; close all;
 % configuration
 Is = 2; Id = 3;
 eta = 1.5; row = 1024; col = 1224;
-K = [1232, 0, 612; 0, 1232, 512; 0, 0, 1]; 
+K = [1232, 0, 612; 0, -1232, 512; 0, 0, 1]; 
 mask = ones(row, col);  Mask = mask == 1;
 % parameter
 V = getViewingDirection(K, Mask);  
@@ -13,7 +13,7 @@ Beta = getPerspectiveDistortionAngle(V, Mask);
 Beta_orth = zeros(size(Beta));
 Psi = getPsiAngle(V, Mask);
 % normal vector
-flag = 2;
+flag = 3;
 if flag == 1 % plane
     [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectivePlane(V, row, col, K);
 elseif flag == 2 % hemisphere

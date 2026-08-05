@@ -3,6 +3,7 @@ clc; clear; close all;
 %%
 [location, name] = get_name_DeepSfP();
 index = get_DeepSfP_test_name(name);
+save("ObjectName.mat", 'location', 'name', 'index');
 %%
 row = 1024; col = 1224;
 V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
