@@ -29,9 +29,9 @@ for ii = 1 : length(iList)
     N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask);
     N = getRefinedSurfaceNormal(N, N_desired);
     error_normal = getErrorNormalAngle(N, N_desired, Mask);
-    fprintf("\t Perspective MAE: %.3f degree\n", mean(error_normal(Mask)));
-    fprintf("\t Perspective SD: %.3f degree\n", std(error_normal(Mask)));
-    fprintf("\t Perspective RMSE: %.3f degree\n", sqrt(mean(error_normal(Mask).^2)));
+    fprintf("\t Perspective MAE: %.3f rad\n", mean(error_normal(Mask)));
+    fprintf("\t Perspective SD: %.3f rad\n", std(error_normal(Mask)));
+    fprintf("\t Perspective RMSE: %.3f rad\n", sqrt(mean(error_normal(Mask).^2)));
     %% Polar Image
 %     fig = figure;
 %     polarImage.I0(~Mask) = 1;
@@ -84,9 +84,9 @@ for ii = 1 : length(iList)
     N_DeePSfP_gt = deepSfP.N_gt{i};
     Mask_DeePSfP = deepSfP.Mask{i} == 1;
     error_DeePSfP = getErrorNormalAngle(N_DeePSfP, N_DeePSfP_gt, Mask_DeePSfP);
-    fprintf("\t DeePSfP MAE: %.3f degree\n", mean(error_DeePSfP(Mask_DeePSfP)));
-    fprintf("\t DeePSfP SD: %.3f degree\n", std(error_DeePSfP(Mask_DeePSfP)));
-    fprintf("\t DeePSfP RMSE: %.3f degree\n", sqrt(mean(error_DeePSfP(Mask_DeePSfP).^2)));   
+    fprintf("\t DeePSfP MAE: %.3f rad\n", mean(error_DeePSfP(Mask_DeePSfP)));
+    fprintf("\t DeePSfP SD: %.3f rad\n", std(error_DeePSfP(Mask_DeePSfP)));
+    fprintf("\t DeePSfP RMSE: %.3f rad\n", sqrt(mean(error_DeePSfP(Mask_DeePSfP).^2)));   
     %
     [r_min, r_max, c_min, c_max] = getrange(deepSfP.Mask{i});
     N_DeePSfP = N_DeePSfP(r_min : r_max, c_min : c_max, :);
