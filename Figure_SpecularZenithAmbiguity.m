@@ -5,9 +5,10 @@ close all;
 %%
 eta = 1.5;
 beta = pi/6;
-FontSize = 25;
-LineWidth = 2.5;
-Resolution = 300;
+plotParameter.FontSize = 23;
+plotParameter.LineWidth = 2;
+plotParameter.Scale = 1.2;
+plotParameter.Resolution = 300;
 %%
 N = 1000;
 theta_list = linspace(0, pi/2, N);
@@ -36,20 +37,25 @@ cos_theta_orth = sqrt((2 + K_orth.^2 * (eta^2 - 1) - K_orth.*sqrt(K_orth.^2 * (e
 theta_val_orth = acos(cos_theta_orth);
 %% Brewster angle
 theta_B = acos(1 / sqrt(1 + eta^2));
+%% rad 2 deg
+theta_list = rad2deg(theta_list);
+theta_val = rad2deg(theta_val);
+theta_val_orth = rad2deg(theta_val_orth);
+theta_B = rad2deg(theta_B);
 %% Plot
-fig = figure; hold on; grid on; box on;
-plot(theta_list, rho_sp,'-', 'Color', [0.4660 0.6740 0.1880], 'LineWidth', LineWidth);
-plot(theta_list, rho_sp_orth,'--', 'Color', [0.4660 0.6740 0.1880], 'LineWidth', LineWidth);
+fig = figure('Position', [100, 100, 850, 450]); hold on; grid on; box on;
+plot(theta_list, rho_sp,'-', 'Color', [0.4660 0.6740 0.1880], 'LineWidth', plotParameter.Scale * plotParameter.LineWidth);
+plot(theta_list, rho_sp_orth,'--', 'Color', [0.4660 0.6740 0.1880], 'LineWidth', plotParameter.Scale * plotParameter.LineWidth);
 plot(theta_list, rho_val*ones(1, length(theta_list)), ':', 'Color', [0.4 0.4 0.4], 'LineWidth', 2);
 plot(theta_val, [rho_val, rho_val], 'r+', 'MarkerSize', 10, 'LineWidth', 3);
 plot(theta_val_orth, [rho_val, rho_val], 'rx', 'MarkerSize', 10, 'LineWidth', 3);
-axis([0, 1.6, 0, 1]);
-set(gca,'xtick',0:0.4:1.6,'FontSize',FontSize,'FontName','Times New Roman');
+axis([0, 90, 0, 1]);
+set(gca,'xtick',0:30:90,'FontSize', plotParameter.Scale * plotParameter.FontSize,'FontName','Times New Roman');
 yticks([0 0.25 0.5 0.75 1]);
-set(gca,'FontSize',FontSize,'FontName','Times New Roman');
-xlabel('Zenith angle $\theta$ (rad)','interpreter','latex', 'FontSize',FontSize);
-ylabel('Degree of polarization', 'FontSize',FontSize);
-set(gca,'LineWidth', LineWidth);
+set(gca,'FontSize', plotParameter.Scale * plotParameter.FontSize,'FontName','Times New Roman');
+xlabel('Zenith angle $\theta$ ($^\circ$)','interpreter','latex', 'FontSize', plotParameter.Scale * plotParameter.FontSize);
+ylabel('Degree of polarization', 'FontSize', plotParameter.Scale * plotParameter.FontSize);
+set(gca,'LineWidth', plotParameter.Scale * plotParameter.LineWidth);
 % Plot Brewster angle
 plot(ones(N, 1) * theta_B, linspace(0, 1, N), '--', 'Color', [0.4 0.4 0.4], 'LineWidth', 2);
 ax = gca;
@@ -59,13 +65,15 @@ ax.XTick = new_ticks;
 labels = cell(size(new_ticks));
 for i = 1:length(new_ticks)
     if new_ticks(i) == theta_B
-        labels{i} = '\theta_B'; 
+        labels{i} = ''; 
     else
-        labels{i} = num2str(new_ticks(i), '%.1f'); 
+        labels{i} = ['  ', num2str(new_ticks(i), '%d')]; 
     end
 end
 ax.XTickLabel = labels;
-legend('$\rho^{sp}$', '$\rho^{sp}_{orth}$','interpreter','latex', 'Location', 'northwest', 'FontSize',FontSize);
+text(theta_B - 4, +0.06, '$\theta_B$', 'Interpreter', 'latex', ...
+    'FontSize', plotParameter.Scale * plotParameter.FontSize, 'HorizontalAlignment', 'center');
+legend('$\rho^{sp}$', '$\rho^{sp}_{orth}$','interpreter','latex', 'Location', 'northwest', 'FontSize', plotParameter.Scale * plotParameter.FontSize);
 %% 
-exportgraphics(fig, 'zenith_specular.png', 'Resolution', Resolution);
+exportgraphics(fig, 'fig_zenith_specular.png', 'Resolution', plotParameter.Resolution);
 

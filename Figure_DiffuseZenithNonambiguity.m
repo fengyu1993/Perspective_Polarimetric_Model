@@ -5,9 +5,10 @@ close all;
 %%
 eta = 1.5;
 beta = pi/6;
-FontSize = 25;
-LineWidth = 2.5;
-Resolution = 300;
+plotParameter.FontSize = 23;
+plotParameter.LineWidth = 2;
+plotParameter.Scale = 1.2;
+plotParameter.Resolution = 300;
 %%
 N = 1000;
 theta_list = linspace(0, pi/2, N);
@@ -32,21 +33,26 @@ Q_dp_orth = (1 + rho_val) / (1 - rho_val);
 S_orth = sqrt(Q_dp_orth);
 cos_theta_orth = (eta - S_orth) / sqrt((S_orth^2 - 1)*eta^2 + (S_orth - eta)^2);
 theta_val_orth = acos(cos_theta_orth);
+%% rad 2 deg
+theta_list = rad2deg(theta_list);
+theta_val = rad2deg(theta_val);
+theta_val_orth = rad2deg(theta_val_orth);
 %% 设置
-fig = figure; hold on; grid on; box on;
-plot(theta_list, rho_dp,'-', 'Color', [0.4940 0.1840 0.5560], 'LineWidth', LineWidth);
-plot(theta_list, rho_dp_orth,'--', 'Color', [0.4940 0.1840 0.5560], 'LineWidth', LineWidth);
+fig = figure('Position', [100, 100, 850, 450]); hold on; grid on; box on;
+plot(theta_list, rho_dp,'-', 'Color', [0.4940 0.1840 0.5560], 'LineWidth', plotParameter.Scale * plotParameter.LineWidth);
+plot(theta_list, rho_dp_orth,'--', 'Color', [0.4940 0.1840 0.5560], 'LineWidth', plotParameter.Scale * plotParameter.LineWidth);
 plot(theta_list, rho_val*ones(1, length(theta_list)), ':', 'Color', [0.4 0.4 0.4], 'LineWidth', 2);
 plot(theta_val, [rho_val, rho_val], 'r+', 'MarkerSize', 10, 'LineWidth', 3);
 plot(theta_val_orth, [rho_val, rho_val], 'rx', 'MarkerSize', 10, 'LineWidth', 3);
-axis([0, 1.6, -0.2, 0.4]);
-set(gca,'xtick',0:0.4:1.6,'FontSize',FontSize,'FontName','Times New Roman');
+axis([0, 90, -0.2, 0.4]);
+set(gca,'xtick',0:30:90,'FontSize',plotParameter.Scale * plotParameter.FontSize,'FontName','Times New Roman');
 yticks([-0.2 0 0.2 0.4]);
-% yticklabels({'-0.6','-0.3','0','0.3','0.6','1'})
-set(gca,'FontSize',FontSize,'FontName','Times New Roman');
-xlabel('Zenith angle $\theta$ (rad)','interpreter','latex', 'FontSize',FontSize);
-ylabel('Degree of polarization', 'FontSize',FontSize);
-set(gca,'LineWidth', LineWidth);
-legend('$\rho^{dp}$', '$\rho^{dp}_{orth}$','interpreter','latex', 'Location', 'northwest', 'FontSize',FontSize);
+set(gca,'FontSize',plotParameter.Scale * plotParameter.FontSize,'FontName','Times New Roman');
+xlabel('Zenith angle $\theta$ ($^\circ$)','interpreter','latex', 'FontSize',plotParameter.Scale * plotParameter.FontSize);
+ylabel('Degree of polarization', 'FontSize',plotParameter.Scale * plotParameter.FontSize);
+set(gca,'LineWidth', plotParameter.Scale * plotParameter.LineWidth);
+legend('$\rho^{dp}$', '$\rho^{dp}_{orth}$','interpreter','latex', 'Location', 'northwest', 'FontSize',plotParameter.Scale * plotParameter.FontSize);
 %%
-exportgraphics(fig, 'zenith_diffuse.png', 'Resolution', Resolution);
+exportgraphics(fig, 'fig_zenith_diffuse.png', 'Resolution', plotParameter.Resolution);
+
+

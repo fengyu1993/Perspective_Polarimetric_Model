@@ -4,7 +4,9 @@ clc; clear; close all;
 % configuration
 Is = 2; Id = 3;
 eta = 1.5; row = 1024; col = 1224;
-K = [1232, 0, 612; 0, -1232, 512; 0, 0, 1]; 
+% K = [1232, 0, 612; 0, -1232, 512; 0, 0, 1]; 
+% K = [2464, 0, 612; 0, -2464, 512; 0, 0, 1]; 
+K = [900, 0, 612; 0, -900, 512; 0, 0, 1]; 
 mask = ones(row, col);  Mask = mask == 1;
 % parameter
 V = getViewingDirection(K, Mask);  
@@ -86,34 +88,15 @@ fprintf('Diffuse error N angle RMSE perspective/orthographic/IJCV: %.3f / %.3f /
 if flag == 1 % plane
     save('./Data/Data_SimulationPlane.mat', 'Beta', 'N_desired', ...
             'error_N_angle_sp', 'error_N_angle_sp_orth', 'Mask', 'error_N_angle_sp_IJCV', ...
-            'error_N_angle_dp', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV');
-
-%     save('./Data/Data_SimulationPlane.mat', 'K', 'eta', 'Mask', 'Is', 'Id', 'Psi',...
-%             'V', 'Beta', 'Phi_desired', 'Theta_desired', 'N_desired', 'PolarImage_sp', 'PolarImage_dp',...
-%             'N_sp', 'N_sp_orth', 'N_sp_IJCV', 'N_dp', 'N_dp_orth', 'N_dp_IJCV', ...
-%             'error_N_angle_sp', 'error_N_angle_sp_orth', 'error_N_angle_sp_IJCV', ...
-%             'error_N_angle_dp', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV');
-% 
+            'error_N_angle_dp', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV'); 
 elseif flag == 2 % hemisphere
      save('./Data/Data_SimulationHemisphere.mat', 'Mask', 'Beta', 'N_desired', ...
             'error_N_angle_sp', 'error_N_angle_sp_orth', 'error_N_angle_sp_IJCV', ...
             'error_N_angle_dp', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV');   
-    
-% %      save('./Data/Data_SimulationHemisphere.mat', 'K', 'eta', 'Mask', 'Is', 'Id', 'Psi',...
-% %             'V', 'Beta', 'Phi_desired', 'Theta_desired', 'N_desired', 'PolarImage_sp', 'PolarImage_dp',...
-% %             'N_sp', 'N_sp_orth', 'N_sp_IJCV', 'N_dp', 'N_dp_orth', 'N_dp_IJCV', ...
-% %             'error_N_angle_sp', 'error_N_angle_sp_orth', 'error_N_angle_sp_IJCV', ...
-% %             'error_N_angle_dp', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV');  
 elseif flag == 3 % random 
     save('./Data/Data_SimulationRandom.mat', 'Mask', 'Beta', 'N_desired', ...
             'error_N_angle_sp', 'error_N_angle_sp_orth', 'error_N_angle_sp_IJCV', ...
             'error_N_angle_dp', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV');
-
-% %     save('./Data/Data_SimulationRandom.mat', 'K', 'eta', 'Mask', 'Is', 'Id', 'Psi',...
-% %             'V', 'Beta', 'Phi_desired', 'Theta_desired', 'N_desired', 'PolarImage_sp', 'PolarImage_dp',...
-% %             'N_sp', 'N_sp_orth', 'N_sp_IJCV', 'N_dp', 'N_dp_orth', 'N_dp_IJCV', ...
-% %             'error_N_angle_sp', 'error_N_angle_sp_orth', 'error_N_angle_sp_IJCV', ...
-% %             'error_N_angle_dp', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV');
 end
 
 
@@ -126,8 +109,8 @@ function [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectivePlane(V, 
     
     Zc = 1100;     
     Pc = [0; 0; Zc];   
-    W = 1200;    
-    H = 700;     
+    W = 1200*1.3;    
+    H = 700*1.3;     
 
     temp_up = [0; -1; 0]; 
     U = cross(temp_up, N_valid); 
@@ -218,17 +201,20 @@ function [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectiveHemispher
 end
 function [Phi_desired, Theta_desired, N_desired] = getPerspectiveRand(V, row, col, Mask)
     rng(1);
+    sigma = 1.2; %1.2
 
     Theta_raw = rand(row, col) * (pi/2); 
     Phi_raw = rand(row, col) * 2 * pi - pi; 
     
-    sigma = 1.2; 
-    Theta_desired = imgaussfilt(Theta_raw, sigma, 'Padding', 'replicate');
-    Phi_desired   = imgaussfilt(Phi_raw, sigma, 'Padding', 'replicate');
     
-
+    Theta_desired = imgaussfilt(Theta_raw, sigma, 'Padding', 'replicate');
     Theta_desired = min(max(Theta_desired, 0), pi/2);
-    Phi_desired   = min(max(Phi_desired, -pi), pi);
+
+    Phi_X = cos(Phi_raw);
+    Phi_Y = sin(Phi_raw);
+    Phi_X_smooth = imgaussfilt(Phi_X, sigma, 'Padding', 'replicate');
+    Phi_Y_smooth = imgaussfilt(Phi_Y, sigma, 'Padding', 'replicate');
+    Phi_desired = atan2(Phi_Y_smooth, Phi_X_smooth);
 
     N_desired = getSurfaceNormal(V, Theta_desired, Phi_desired, Mask);
 
