@@ -28,28 +28,28 @@ plotParameter.Resolution = 300;
 % plot3DShape(fig_3DRandom, Random.N_desired, Random.Mask);
 % exportgraphics(fig_3DRandom, 'fig_3D_random.png', 'Resolution', plotParameter.Resolution);
 %% 
-% num = 30;
-% [errorBetaPlaneMean, errorBetaPlaneStd, betaPlaneList] = getErrorBetaMeanStd(Plane, num);
-% [errorBetaHemisphereMean, errorBetaHemisphereStd, betaHemisphereList] = getErrorBetaMeanStd(Hemisphere, num);
-% [errorBetaRandomMean, errorBetaRandomStd, betaRandomList] = getErrorBetaMeanStd(Random, num);
-% % Plane
-% figPlaneMeanStd = figure('Position', [100, 100, 850, 450]);  
-% plotBetaMeanStd(figPlaneMeanStd, errorBetaPlaneMean, errorBetaPlaneStd, betaPlaneList, colors, plotParameter);
-% axis([0 betaPlaneList(end) 0 1.2]);
-% set(gca, 'xtick', 0:0.1:0.6, 'ytick', 0:0.3:1.5, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
-% exportgraphics(figPlaneMeanStd, 'fig_Error_Beta_Normal_Angle_Plane_Diffuse.png', 'Resolution', plotParameter.Resolution);
-% % Hemisphere
-% figHemisphereMeanStd = figure('Position', [100, 100, 850, 450]);   
-% plotBetaMeanStd(figHemisphereMeanStd, errorBetaHemisphereMean, errorBetaHemisphereStd, betaHemisphereList, colors, plotParameter);
-% axis([0 betaHemisphereList(end) 0 0.6]);
-% set(gca, 'xtick', 0:0.1:0.6, 'ytick', 0:0.2:0.6, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
-% exportgraphics(figHemisphereMeanStd, 'fig_Error_Beta_Normal_Angle_Hemisphere_Diffuse.png', 'Resolution', plotParameter.Resolution);
-% % Random
-% figRandomMeanStd = figure('Position', [100, 100, 850, 450]);   
-% plotBetaMeanStd(figRandomMeanStd, errorBetaRandomMean, errorBetaRandomStd, betaRandomList, colors, plotParameter);
-% axis([0 betaRandomList(end) 0 1]);
-% set(gca, 'xtick', 0:0.1:0.6, 'ytick', 0:0.2:1, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
-% exportgraphics(figRandomMeanStd, 'fig_Error_Beta_Normal_Angle_Diffuse.png', 'Resolution', plotParameter.Resolution);
+num = 30;
+[errorBetaPlaneMean, errorBetaPlaneStd, betaPlaneList] = getErrorBetaMeanStd(Plane, num);
+[errorBetaHemisphereMean, errorBetaHemisphereStd, betaHemisphereList] = getErrorBetaMeanStd(Hemisphere, num);
+[errorBetaRandomMean, errorBetaRandomStd, betaRandomList] = getErrorBetaMeanStd(Random, num);
+% Plane
+figPlaneMeanStd = figure('Position', [100, 100, 850, 450]);  
+plotBetaMeanStd(figPlaneMeanStd, errorBetaPlaneMean, errorBetaPlaneStd, betaPlaneList, colors, plotParameter);
+axis([0 betaPlaneList(end) 0 90]);
+set(gca, 'xtick', 0:15:45, 'ytick', 0:30:90, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
+exportgraphics(figPlaneMeanStd, 'fig_Error_Beta_Normal_Angle_Plane_Diffuse.png', 'Resolution', plotParameter.Resolution);
+% Hemisphere
+figHemisphereMeanStd = figure('Position', [100, 100, 850, 450]);   
+plotBetaMeanStd(figHemisphereMeanStd, errorBetaHemisphereMean, errorBetaHemisphereStd, betaHemisphereList, colors, plotParameter);
+axis([0 betaHemisphereList(end) 0 60]);
+set(gca, 'xtick', 0:10:30, 'ytick', 0:20:60, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
+exportgraphics(figHemisphereMeanStd, 'fig_Error_Beta_Normal_Angle_Hemisphere_Diffuse.png', 'Resolution', plotParameter.Resolution);
+% Random
+figRandomMeanStd = figure('Position', [100, 100, 850, 450]);   
+plotBetaMeanStd(figRandomMeanStd, errorBetaRandomMean, errorBetaRandomStd, betaRandomList, colors, plotParameter);
+axis([0 betaRandomList(end) 0 75]);
+set(gca, 'xtick', 0:15:45, 'ytick', 0:15:75, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
+exportgraphics(figRandomMeanStd, 'fig_Error_Beta_Normal_Angle_Diffuse.png', 'Resolution', plotParameter.Resolution);
 %% Plane
 % perspective
 figPlanePers = figure('Position', [100, 100, 620, 420]);
@@ -251,8 +251,8 @@ function plotBetaMeanStd(fig, errorBetaMean, errorBetaStd, betaList, colors, plo
     p3 = plot(x, errorBetaMean.IJCV, 'color', colors(3,:),'LineWidth', plotParameter.LineWidth * plotParameter.Scale);
     legend([p2, p3, p1], "Orth.", "GMPC", "Ours", 'Location', 'northwest', 'FontSize', plotParameter.FontSize, 'FontName', 'Times New Roman');
     set(gca,'LineWidth', plotParameter.LineWidth * plotParameter.Scale);
-    xlabel('\beta', 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman');
-    ylabel('\Delta \gamma', 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman');
+    xlabel('Perspective distortion angle \beta (\circ)', 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman');
+    ylabel('Errors \Delta \gamma (\circ)', 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman');
 end
 function data_deg = Rad2Deg(data_rad)
     data_deg = data_rad;

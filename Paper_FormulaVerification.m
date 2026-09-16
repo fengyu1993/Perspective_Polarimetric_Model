@@ -19,7 +19,7 @@ V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
 Beta = getPerspectiveDistortionAngle(V, Mask);
 Beta_orth = zeros(size(Beta));
 Psi = getPsiAngle(V, Mask);
-flag = 1;
+flag = 3;
 if flag == 1 % Theta, Phi --> N 
     Theta_desired = rand(row, col) * (pi/2); 
     Phi_desired = rand(row, col) * 2 * pi - pi; 

@@ -15,7 +15,7 @@ Beta = getPerspectiveDistortionAngle(V, Mask);
 Beta_orth = zeros(size(Beta));
 Psi = getPsiAngle(V, Mask);
 % normal vector
-flag = 3;
+flag = 1;
 if flag == 1 % plane
     [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectivePlane(V, row, col, K);
 elseif flag == 2 % hemisphere
@@ -217,6 +217,5 @@ function [Phi_desired, Theta_desired, N_desired] = getPerspectiveRand(V, row, co
     Phi_desired = atan2(Phi_Y_smooth, Phi_X_smooth);
 
     N_desired = getSurfaceNormal(V, Theta_desired, Phi_desired, Mask);
-
 end
 
