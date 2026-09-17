@@ -19,7 +19,7 @@ V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
 Beta = getPerspectiveDistortionAngle(V, Mask);
 Beta_orth = zeros(size(Beta));
 Psi = getPsiAngle(V, Mask);
-flag = 1;
+flag = 2;
 if flag == 1 % Theta, Phi --> N 
     Theta_desired = rand(row, col) * (pi/2); 
     Phi_desired = rand(row, col) * 2 * pi - pi; 
@@ -31,7 +31,7 @@ elseif flag == 2 % N --> Theta, Phi
     Ny = zeros(row, col); Ny(Mask) = N_valid(:, 2);
     Nz = zeros(row, col); Nz(Mask) = -abs(N_valid(:, 3));
     N_desired = cat(3, Nx, Ny, Nz);
-    [Phi_desired, Theta_desired] = getPhiTheta(N_desired, V, Mask);
+    [Phi_desired, Theta_desired, N_desired] = getPhiTheta_New(N_desired, V, Mask);
 elseif flag == 3 % plane
     N_valid = randn(1, 3);
     N_valid = N_valid ./ norm(N_valid);
@@ -39,7 +39,7 @@ elseif flag == 3 % plane
     Ny = zeros(row, col); Ny(Mask) = N_valid(2);
     Nz = zeros(row, col); Nz(Mask) = -abs(N_valid(3));
     N_desired = cat(3, Nx, Ny, Nz);
-    [Phi_desired, Theta_desired] = getPhiTheta(N_desired, V, Mask);
+    [Phi_desired, Theta_desired, N_desired] = getPhiTheta_New(N_desired, V, Mask);
 end
 % Psi = Phi_desired; % Perspective Approximation 
 %% Configuration
@@ -91,42 +91,39 @@ end
 %% Check Phi specular reflection
 Phi_sp = getAzimuthAngleSpecularReflection_New(PolarImage_sp, Mask);
 error_phi_sp = getAngleError(Phi_desired, Phi_sp);
-figure; imagesc(error_phi_sp); colormap(parula); colorbar; title('Perspective Specular Reflection: err_{\phi}');
+figure('Position', [100, 100, 1050, 450]); subplot(1, 2, 1); imagesc(error_phi_sp); colormap(parula); colorbar; title('Perspective Specular Reflection: err_{\phi}');
 %% Check Phi diffuse reflection
 Phi_dp = getAzimuthAngleDiffuseReflection_New(PolarImage_dp, Mask);
 error_phi_dp = getAngleError(Phi_desired, Phi_dp);
-figure; imagesc(error_phi_dp); colormap(parula); colorbar; title('Perspective Diffuse Reflection: err_{\phi}');
-
-
-%     %     %% Check Theta specular reflection
-%     Theta_sp = getZenithAngleSpecularReflection(Rho_sp, Mask, Beta, eta);
-%     % check
-%     error_theta_sp_1 = abs(Theta_desired - Theta_sp.sp1);
-%     error_theta_sp_2 = abs(Theta_desired - Theta_sp.sp2);
-%     error_theta_sp = min(error_theta_sp_1, error_theta_sp_2);
-%     fig_theta_sp = figure; 
-%     ax_t_theta_sp1 = subplot(1, 2, 1); imagesc(error_theta_sp); colormap(parula); colorbar; title('Perspective Specular Reflection: err_{\theta}');
-%     %% Check Theta diffuse reflection
-%     Theta_dp = getZenithAngleDiffuseReflection(Rho_dp, Mask, Beta, eta);
-%     % check
-%     error_theta_dp_1 = abs(Theta_dp.dp1 - Theta_desired);
-%     error_theta_dp_2 = abs(Theta_dp.dp2 - Theta_desired);
-%     error_theta_dp = min(error_theta_dp_1, error_theta_dp_2);
-%     fig_theta_dp = figure; 
-%     ax_t_theta_dp1 = subplot(1, 2, 1); imagesc(error_theta_dp); colormap(parula); colorbar; title('Perspective Diffuse Reflection: err_{\theta}');
-%     %% Check normal vector specular reflection
-%     N_sp_1 = getSurfaceNormal(V, Theta_sp.sp1, Phi_sp.sp1, Mask);
-%     N_sp_2 = getSurfaceNormal(V, Theta_sp.sp2, Phi_sp.sp1, Mask);
-%     N_sp_3 = getSurfaceNormal(V, Theta_sp.sp1, Phi_sp.sp2, Mask);
-%     N_sp_4 = getSurfaceNormal(V, Theta_sp.sp2, Phi_sp.sp2, Mask);
-%     % check
-%     error_N_angle_sp_1 = acos(min(max(sum(N_sp_1 .* N_desired, 3), -1), 1));
-%     error_N_angle_sp_2 = acos(min(max(sum(N_sp_2 .* N_desired, 3), -1), 1));
-%     error_N_angle_sp_3 = acos(min(max(sum(N_sp_3 .* N_desired, 3), -1), 1));
-%     error_N_angle_sp_4 = acos(min(max(sum(N_sp_4 .* N_desired, 3), -1), 1));
-%     error_N_angle_sp = min(cat(3, error_N_angle_sp_1, error_N_angle_sp_2, error_N_angle_sp_3, error_N_angle_sp_4), [], 3);
-%     fig_N_sp = figure;
-%     ax_t_N_angle_sp1 = subplot(1, 2, 1); imagesc(error_N_angle_sp); colormap(parula); colorbar; title('Perspective Specular Reflection N Angle');
+subplot(1, 2, 2); imagesc(error_phi_dp); colormap(parula); colorbar; title('Perspective Diffuse Reflection: err_{\phi}');
+%% Check Theta specular reflection
+Theta_sp = getZenithAngleSpecularReflection_New(Rho_sp, Mask, Beta, eta);
+error_theta_sp = getAngleError(Theta_desired, Theta_sp);
+figure('Position', [100, 100, 1050, 450]); subplot(1, 2, 1); imagesc(error_theta_sp); colormap(parula); colorbar; title('Perspective Specular Reflection: err_{\theta}');
+%% Check Theta diffuse reflection
+Theta_dp = getZenithAngleDiffuseReflection_New(Rho_dp, Mask, Beta, eta);
+error_theta_dp = getAngleError(Theta_desired, Theta_dp);
+subplot(1, 2, 2); imagesc(error_theta_dp); colormap(parula); colorbar; title('Perspective Diffuse Reflection: err_{\theta}');
+%% Check normal vector specular reflection
+N_sp_1 = getSurfaceNormal(V, Theta_sp.pos1, Phi_sp.sp1, Mask);
+N_sp_2 = getSurfaceNormal(V, Theta_sp.pos1, Phi_sp.sp3, Mask);
+N_sp_3 = getSurfaceNormal(V, Theta_sp.pos2, Phi_sp.sp1, Mask);
+N_sp_4 = getSurfaceNormal(V, Theta_sp.pos2, Phi_sp.sp3, Mask);
+N_sp_5 = getSurfaceNormal(V, Theta_sp.neg1, Phi_sp.sp2, Mask);
+N_sp_6 = getSurfaceNormal(V, Theta_sp.neg1, Phi_sp.sp4, Mask);
+N_sp_7 = getSurfaceNormal(V, Theta_sp.neg2, Phi_sp.sp2, Mask);
+N_sp_8 = getSurfaceNormal(V, Theta_sp.neg2, Phi_sp.sp4, Mask);
+% check
+error_N_angle_sp_1 = acos(min(max(sum(N_sp_1 .* N_desired, 3), -1), 1));
+error_N_angle_sp_2 = acos(min(max(sum(N_sp_2 .* N_desired, 3), -1), 1));
+error_N_angle_sp_3 = acos(min(max(sum(N_sp_3 .* N_desired, 3), -1), 1));
+error_N_angle_sp_4 = acos(min(max(sum(N_sp_4 .* N_desired, 3), -1), 1));
+error_N_angle_sp_5 = acos(min(max(sum(N_sp_5 .* N_desired, 3), -1), 1));
+error_N_angle_sp_6 = acos(min(max(sum(N_sp_6 .* N_desired, 3), -1), 1));
+error_N_angle_sp_7 = acos(min(max(sum(N_sp_7 .* N_desired, 3), -1), 1));
+error_N_angle_sp_8 = acos(min(max(sum(N_sp_8 .* N_desired, 3), -1), 1));
+error_N_angle_sp = min(cat(3, error_N_angle_sp_1, error_N_angle_sp_2, error_N_angle_sp_3, error_N_angle_sp_4, error_N_angle_sp_5, error_N_angle_sp_6, error_N_angle_sp_7, error_N_angle_sp_8), [], 3);
+figure('Position', [100, 100, 1050, 450]); subplot(1, 2, 1); imagesc(error_N_angle_sp); colormap(parula); colorbar; title('Perspective Specular Reflection N Angle');
 %     %% Check normal vector diffuse reflection
 %     N_dp_1 = getSurfaceNormal(V, Theta_dp.dp1, Phi_dp.dp1, Mask);
 %     N_dp_2 = getSurfaceNormal(V, Theta_dp.dp1, Phi_dp.dp3, Mask);
@@ -140,61 +137,10 @@ figure; imagesc(error_phi_dp); colormap(parula); colorbar; title('Perspective Di
 %     error_N_angle_dp = min(cat(3, error_N_angle_dp_1, error_N_angle_dp_2, error_N_angle_dp_3, error_N_angle_dp_4), [], 3);
 %     fig_N_dp = figure;
 %     ax_t_N_angle_dp1 = subplot(1, 2, 1); imagesc(error_N_angle_dp); colormap(parula); colorbar; title('Perspective Diffuse Reflection N Angle');
-% %% Orthographic projection
-%     %% Check Theta specular reflection
-%     Theta_sp_orth = getZenithAngleSpecularReflection(Rho_sp, Mask, Beta_orth, eta);
-%     % check
-%     error_theta_sp_1_orth = abs(Theta_desired - Theta_sp_orth.sp1);
-%     error_theta_sp_2_orth = abs(Theta_desired - Theta_sp_orth.sp2);
-%     error_theta_sp_orth = min(error_theta_sp_1_orth, error_theta_sp_2_orth);
-%     figure(fig_theta_sp); 
-%     ax_t_theta_sp2 = subplot(1, 2, 2); imagesc(error_theta_sp_orth); colormap(parula); colorbar; title('Orthographic Specular Reflection: err_{\theta}');
-%     max_val = max([get(ax_t_theta_sp1, 'CLim'), get(ax_t_theta_sp2, 'CLim')]);
-%     set(ax_t_theta_sp1, 'CLim', [0, max_val]);
-%     set(ax_t_theta_sp2, 'CLim', [0, max_val]);
-%     %% Check Theta diffuse reflection
-%     Theta_dp_orth = getZenithAngleDiffuseReflection(Rho_dp, Mask, Beta_orth, eta);
-%     % check
-%     error_theta_dp_1_orth = abs(Theta_dp_orth.dp1 - Theta_desired);
-%     error_theta_dp_2_orth = abs(Theta_dp_orth.dp2 - Theta_desired);
-%     error_theta_dp_orth = min(error_theta_dp_1_orth, error_theta_dp_2_orth);
-%     figure(fig_theta_dp);
-%     ax_t_theta_dp2 = subplot(1, 2, 2); imagesc(error_theta_dp_orth); colormap(parula); colorbar; title('Orthographic Diffuse Reflection: err_{\theta}');
-%     max_val = max([get(ax_t_theta_dp1, 'CLim'), get(ax_t_theta_dp2, 'CLim')]);
-%     set(ax_t_theta_dp1, 'CLim', [0, max_val]);
-%     set(ax_t_theta_dp2, 'CLim', [0, max_val]);
-%     %% Check normal vector specular reflection
-%     N_sp_orth_1 = getSurfaceNormal(V_orth, Theta_sp_orth.sp1, Phi_sp.sp1, Mask);
-%     N_sp_orth_2 = getSurfaceNormal(V_orth, Theta_sp_orth.sp2, Phi_sp.sp1, Mask);
-%     N_sp_orth_3 = getSurfaceNormal(V_orth, Theta_sp_orth.sp1, Phi_sp.sp2, Mask);
-%     N_sp_orth_4 = getSurfaceNormal(V_orth, Theta_sp_orth.sp2, Phi_sp.sp2, Mask);
-%     % check
-%     error_N_angle_sp_orth_1 = acos(min(max(sum(N_sp_orth_1 .* N_desired, 3), -1), 1));
-%     error_N_angle_sp_orth_2 = acos(min(max(sum(N_sp_orth_2 .* N_desired, 3), -1), 1));
-%     error_N_angle_sp_orth_3 = acos(min(max(sum(N_sp_orth_3 .* N_desired, 3), -1), 1));
-%     error_N_angle_sp_orth_4 = acos(min(max(sum(N_sp_orth_4 .* N_desired, 3), -1), 1));
-%     error_N_angle_sp_orth = min(cat(3, error_N_angle_sp_orth_1, error_N_angle_sp_orth_2, error_N_angle_sp_orth_3, error_N_angle_sp_orth_4), [], 3);
-%     figure(fig_N_sp);
-%     ax_t_N_angle_sp2 = subplot(1, 2, 2); imagesc(error_N_angle_sp_orth); colormap(parula); colorbar; title('Orthographic Specular Reflection N Angle');
-%     max_val = max([get(ax_t_N_angle_sp1, 'CLim'), get(ax_t_N_angle_sp2, 'CLim')]);
-%     set(ax_t_N_angle_sp1, 'CLim', [0, max_val]);
-%     set(ax_t_N_angle_sp2, 'CLim', [0, max_val]);    
-%     %% Check normal vector diffuse reflection
-%     N_dp_orth_1 = getSurfaceNormal(V_orth, Theta_dp_orth.dp1, Phi_dp.dp1, Mask);
-%     N_dp_orth_2 = getSurfaceNormal(V_orth, Theta_dp_orth.dp1, Phi_dp.dp3, Mask);
-%     N_dp_orth_3 = getSurfaceNormal(V_orth, Theta_dp_orth.dp2, Phi_dp.dp2, Mask);
-%     N_dp_orth_4 = getSurfaceNormal(V_orth, Theta_dp_orth.dp2, Phi_dp.dp4, Mask);
-%     % check
-%     error_N_angle_dp_orth_1 = acos(min(max(sum(N_dp_orth_1 .* N_desired, 3), -1), 1));
-%     error_N_angle_dp_orth_2 = acos(min(max(sum(N_dp_orth_2 .* N_desired, 3), -1), 1));
-%     error_N_angle_dp_orth_3 = acos(min(max(sum(N_dp_orth_3 .* N_desired, 3), -1), 1));
-%     error_N_angle_dp_orth_4 = acos(min(max(sum(N_dp_orth_4 .* N_desired, 3), -1), 1));
-%     error_N_angle_dp_orth = min(cat(3, error_N_angle_dp_orth_1, error_N_angle_dp_orth_2, error_N_angle_dp_orth_3, error_N_angle_dp_orth_4), [], 3);
-%     figure(fig_N_dp);
-%     ax_t_N_angle_dp2 = subplot(1, 2, 2); imagesc(error_N_angle_dp_orth); colormap(parula); colorbar; title('Orthographic Diffuse Reflection N Angle');
-%     max_val = max([get(ax_t_N_angle_dp1, 'CLim'), get(ax_t_N_angle_dp2, 'CLim')]);
-%     set(ax_t_N_angle_dp1, 'CLim', [0, max_val]);
-%     set(ax_t_N_angle_dp2, 'CLim', [0, max_val]);  
+
+
+
+ 
 % %% Error statistics
 % error_phi_sp_mean = mean(error_phi_sp(:)) * 180 / pi;
 % error_phi_dp_mean = mean(error_phi_dp(:)) * 180 / pi;
