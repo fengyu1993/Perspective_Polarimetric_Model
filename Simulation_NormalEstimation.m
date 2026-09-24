@@ -15,8 +15,8 @@ Beta = getPerspectiveDistortionAngle(V, Mask);
 Beta_orth = zeros(size(Beta));
 Psi = getPsiAngle(V, Mask);
 % normal vector
-flag = 1;
-if flag == 1 % plane
+flag = 2;
+if flag ==  1% plane
     [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectivePlane(V, row, col, K);
 elseif flag == 2 % hemisphere
     [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectiveHemisphere(V, row, col);
@@ -31,72 +31,86 @@ PolarImage_sp = getPolarimetricImageSpecularReflection(Phi_desired, Theta_desire
 Parameter_dp.Psi = Psi; Parameter_dp.Beta = Beta; Parameter_dp.eta = eta; Parameter_dp.Id = Id;
 PolarImage_dp = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp);
 %% Methods Specular Reflection
-% Perspective 
-N_sp = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta, V, eta, 1, Mask);
+% Perspective accurate
+N_sp_pers = getSurfaceNormalFromSpecularReflection_Accurate(PolarImage_sp, Psi, Beta, V, eta, Mask);
+% Perspective approximation
+N_sp_pers_approx = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta, V, eta, 1, Mask);
 % Orthographic 
 N_sp_orth = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta_orth, V_orth, eta, 1, Mask);
 % IJCV 
 N_sp_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(PolarImage_sp, V, eta, 1, Mask);
 %% Methods Diffuse Reflection
-% Perspective 
-N_dp = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta, V, eta, 1, Mask);
+% Perspective accurate
+N_dp_pers = getSurfaceNormalFromDiffuseReflection_Accurate(PolarImage_dp, Psi, Beta, V, eta, Mask);
+% Perspective approximation
+N_dp_pers_approx = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta, V, eta, 1, Mask);
 % Orthographic 
 N_dp_orth = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta_orth, V_orth, eta, 1, Mask);
 % IJCV 
 N_dp_IJCV = getSurfaceNormalFromDiffuseReflection_IJCV(PolarImage_dp, V, eta, 1, Mask);
 %% Error analysis for specular reflection
-% perspective
-error_N_angle_sp = getErrorNormalAngle(N_sp, N_desired, Mask);
-fig_N_sp = figure; ax = subplot(1, 3, 1); h = imagesc(error_N_angle_sp); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Perspective Specular Reflection N Angle');
+% Perspective accurate
+error_N_angle_sp_pers = getErrorNormalAngle(N_sp_pers, N_desired, Mask);
+fig_N_sp = figure; ax = subplot(2, 2, 1); h = imagesc(error_N_angle_sp_pers); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Perspective Specular Reflection N Angle');
+% perspective approximation
+error_N_angle_sp_pers_approx = getErrorNormalAngle(N_sp_pers_approx, N_desired, Mask);
+figure(fig_N_sp); ax = subplot(2, 2, 2); h = imagesc(error_N_angle_sp_pers_approx); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Perspective Approx Specular Reflection N Angle');
 % orthographic
 error_N_angle_sp_orth = getErrorNormalAngle(N_sp_orth, N_desired, Mask);
-figure(fig_N_sp); ax = subplot(1, 3, 2); h = imagesc(error_N_angle_sp_orth); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Orthographic Specular Reflection N Angle');
+figure(fig_N_sp); ax = subplot(2, 2, 3); h = imagesc(error_N_angle_sp_orth); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Orthographic Specular Reflection N Angle');
 % IJCV
 error_N_angle_sp_IJCV = getErrorNormalAngle(N_sp_IJCV, N_desired, Mask);
-figure(fig_N_sp); ax = subplot(1, 3, 3); h = imagesc(error_N_angle_sp_IJCV); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('IJCV Specular Reflection N Angle');
+figure(fig_N_sp); ax = subplot(2, 2, 4); h = imagesc(error_N_angle_sp_IJCV); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('IJCV Specular Reflection N Angle');
 %% Error analysis for diffuse reflection
 % perspective
-error_N_angle_dp = getErrorNormalAngle(N_dp, N_desired, Mask);
-fig_N_dp = figure; ax = subplot(1, 3, 1); h = imagesc(error_N_angle_dp); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Perspective Diffuse Reflection N Angle');
+error_N_angle_dp_pers = getErrorNormalAngle(N_dp_pers, N_desired, Mask);
+fig_N_dp = figure; ax = subplot(2, 2, 1); h = imagesc(error_N_angle_dp_pers); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Perspective Diffuse Reflection N Angle');
+% perspective approximation
+error_N_angle_dp_pers_apprpx = getErrorNormalAngle(N_dp_pers_approx, N_desired, Mask);
+figure(fig_N_dp); ax = subplot(2, 2, 2); h = imagesc(error_N_angle_dp_pers_apprpx); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Perspective Approx Diffuse Reflection N Angle');
 % orthographic
 error_N_angle_dp_orth = getErrorNormalAngle(N_dp_orth, N_desired, Mask);
-figure(fig_N_dp); ax = subplot(1, 3, 2); h = imagesc(error_N_angle_dp_orth); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Orthographic Diffuse Reflection N Angle');
+figure(fig_N_dp); ax = subplot(2, 2, 3); h = imagesc(error_N_angle_dp_orth); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Orthographic Diffuse Reflection N Angle');
 % IJCV
 error_N_angle_dp_IJCV = getErrorNormalAngle(N_dp_IJCV, N_desired, Mask);
-figure(fig_N_dp); ax = subplot(1, 3, 3); h = imagesc(error_N_angle_dp_IJCV); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('IJCV Diffuse Reflection N Angle');
+figure(fig_N_dp); ax = subplot(2, 2, 4); h = imagesc(error_N_angle_dp_IJCV); set(h, 'AlphaData', Mask); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('IJCV Diffuse Reflection N Angle');
 %% Plot 3D Shape
 fig = figure; 
 plot3DShape(fig, N_desired, Mask);
 %% Error statistics
-error_N_angle_sp_mean = mean(error_N_angle_sp(Mask)) * 180 / pi; 
+error_N_angle_sp_pers_mean = mean(error_N_angle_sp_pers(Mask)) * 180 / pi; 
+error_N_angle_sp_pers_approx_mean = mean(error_N_angle_sp_pers_approx(Mask)) * 180 / pi; 
 error_N_angle_sp_orth_mean = mean(error_N_angle_sp_orth(Mask)) * 180 / pi;
 error_N_angle_sp_IJCV_mean = mean(error_N_angle_sp_IJCV(Mask)) * 180 / pi;
-error_N_angle_sp_rmse = sqrt(mean(error_N_angle_sp(Mask).^2)) * 180 / pi; 
+error_N_angle_sp_pers_rmse = sqrt(mean(error_N_angle_sp_pers(Mask).^2)) * 180 / pi; 
+error_N_angle_sp_pers_approx_rmse = sqrt(mean(error_N_angle_sp_pers_approx(Mask).^2)) * 180 / pi; 
 error_N_angle_sp_orth_rmse = sqrt(mean(error_N_angle_sp_orth(Mask).^2)) * 180 / pi;
 error_N_angle_sp_IJCV_rmse = sqrt(mean(error_N_angle_sp_IJCV(Mask).^2)) * 180 / pi;
-fprintf('Specular error N angle MAE perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_sp_mean, error_N_angle_sp_orth_mean, error_N_angle_sp_IJCV_mean);
-fprintf('Specular error N angle RMSE perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_sp_rmse, error_N_angle_sp_orth_rmse, error_N_angle_sp_IJCV_rmse);
-error_N_angle_dp_mean = mean(error_N_angle_dp(Mask)) * 180 / pi; 
+fprintf('Specular error N angle MAE pers/pers_approx/orth./IJCV: %.3f / %.3f / %.3f / %.3f\n', error_N_angle_sp_pers_mean, error_N_angle_sp_pers_approx_mean, error_N_angle_sp_orth_mean, error_N_angle_sp_IJCV_mean);
+fprintf('Specular error N angle RMSE pers/pers_approx/orth./IJCV: %.3f / %.3f / %.3f / %.3f\n', error_N_angle_sp_pers_rmse, error_N_angle_sp_pers_approx_rmse, error_N_angle_sp_orth_rmse, error_N_angle_sp_IJCV_rmse);
+error_N_angle_dp_pers_mean = mean(error_N_angle_dp_pers(Mask)) * 180 / pi; 
+error_N_angle_dp_pers_approx_mean = mean(error_N_angle_dp_pers_apprpx(Mask)) * 180 / pi; 
 error_N_angle_dp_orth_mean = mean(error_N_angle_dp_orth(Mask)) * 180 / pi;
 error_N_angle_dp_IJCV_mean = mean(error_N_angle_dp_IJCV(Mask)) * 180 / pi;
-error_N_angle_dp_rmse = sqrt(mean(error_N_angle_dp(Mask).^2)) * 180 / pi; 
+error_N_angle_dp_pers_rmse = sqrt(mean(error_N_angle_dp_pers(Mask).^2)) * 180 / pi; 
+error_N_angle_dp_pers_apprpx_rmse = sqrt(mean(error_N_angle_dp_pers_apprpx(Mask).^2)) * 180 / pi; 
 error_N_angle_dp_orth_rmse = sqrt(mean(error_N_angle_dp_orth(Mask).^2)) * 180 / pi;
 error_N_angle_dp_IJCV_rmse = sqrt(mean(error_N_angle_dp_IJCV(Mask).^2)) * 180 / pi;
-fprintf('Diffuse error N angle MAE perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_dp_mean, error_N_angle_dp_orth_mean, error_N_angle_dp_IJCV_mean);
-fprintf('Diffuse error N angle RMSE perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_N_angle_dp_rmse, error_N_angle_dp_orth_rmse, error_N_angle_dp_IJCV_rmse);
+fprintf('Diffuse error N angle MAE pers/pers_approx/orth./IJCV: %.3f / %.3f / %.3f / %.3f\n', error_N_angle_dp_pers_mean,error_N_angle_dp_pers_approx_mean, error_N_angle_dp_orth_mean, error_N_angle_dp_IJCV_mean);
+fprintf('Diffuse error N angle RMSE pers/pers_approx/orth./IJCV: %.3f / %.3f / %.3f / %.3f\n', error_N_angle_dp_pers_rmse, error_N_angle_dp_pers_apprpx_rmse, error_N_angle_dp_orth_rmse, error_N_angle_dp_IJCV_rmse);
 %% Save data
 if flag == 1 % plane
     save('./Data/Data_SimulationPlane.mat', 'Beta', 'N_desired', ...
-            'error_N_angle_sp', 'error_N_angle_sp_orth', 'Mask', 'error_N_angle_sp_IJCV', ...
-            'error_N_angle_dp', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV'); 
+            'error_N_angle_sp_pers', 'error_N_angle_sp_pers_approx', 'error_N_angle_sp_orth', 'Mask', 'error_N_angle_sp_IJCV', ...
+            'error_N_angle_dp_pers', 'error_N_angle_dp_pers_apprpx', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV'); 
 elseif flag == 2 % hemisphere
      save('./Data/Data_SimulationHemisphere.mat', 'Mask', 'Beta', 'N_desired', ...
-            'error_N_angle_sp', 'error_N_angle_sp_orth', 'error_N_angle_sp_IJCV', ...
-            'error_N_angle_dp', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV');   
+            'error_N_angle_sp_pers', 'error_N_angle_sp_pers_approx', 'error_N_angle_sp_orth', 'error_N_angle_sp_IJCV', ...
+            'error_N_angle_dp_pers', 'error_N_angle_dp_pers_apprpx', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV');   
 elseif flag == 3 % random 
     save('./Data/Data_SimulationRandom.mat', 'Mask', 'Beta', 'N_desired', ...
-            'error_N_angle_sp', 'error_N_angle_sp_orth', 'error_N_angle_sp_IJCV', ...
-            'error_N_angle_dp', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV');
+            'error_N_angle_sp_pers', 'error_N_angle_sp_pers_approx', 'error_N_angle_sp_orth', 'error_N_angle_sp_IJCV', ...
+            'error_N_angle_dp_pers', 'error_N_angle_dp_pers_apprpx', 'error_N_angle_dp_orth', 'error_N_angle_dp_IJCV');
 end
 
 

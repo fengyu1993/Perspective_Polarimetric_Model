@@ -19,6 +19,12 @@ function Theta = getZenithAngleSpecularReflection_Accurate(PolarImage, Mask, Bet
     h12 = b2 ./ c;
     h22 = a0 - b1;
 
+    flag = (h11 + h22) < 0;
+    if sum(flag) > 1
+        h11(flag)
+        h22(flag)
+    end
+
     Rho_0 = sqrt(((h11 - h22).^2 + 4*h12.^2)) ./ (h11 + h22);
     
     epsilon = 1e-12;

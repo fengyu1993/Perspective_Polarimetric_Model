@@ -1,4 +1,4 @@
-%% Get surface normal from specular reflection 
+%% Get surface normal from specular reflection
 function N = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta, V, eta, a, Mask)
     Phi_sp = getAzimuthAngleSpecularReflection(PolarImage_sp, Mask);
     Rho_sp = getDoLP(PolarImage_sp, Mask);
