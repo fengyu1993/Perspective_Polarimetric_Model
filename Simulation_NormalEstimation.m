@@ -4,8 +4,6 @@ clc; clear; close all;
 % configuration
 Is = 2; Id = 3;
 eta = 1.5; row = 1024; col = 1224;
-% K = [1232, 0, 612; 0, -1232, 512; 0, 0, 1]; 
-% K = [2464, 0, 612; 0, -2464, 512; 0, 0, 1]; 
 K = [900, 0, 612; 0, -900, 512; 0, 0, 1]; 
 mask = ones(row, col);  Mask = mask == 1;
 % parameter

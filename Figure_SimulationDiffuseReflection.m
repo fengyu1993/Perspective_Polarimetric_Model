@@ -15,18 +15,18 @@ plotParameter.LineWidth = 2;
 plotParameter.Scale = 1.2;
 plotParameter.Resolution = 300;
 %% 3D Shape
-% % Plane
-% fig_3DPlane = figure; 
-% plot3DShape(fig_3DPlane, Plane.N_desired, Plane.Mask);
-% exportgraphics(fig_3DPlane, 'fig_3D_plane.png', 'Resolution', plotParameter.Resolution);
-% % Hemisphere
-% fig_3DHemisphere = figure; 
-% plot3DShape(fig_3DHemisphere, Hemisphere.N_desired, Hemisphere.Mask);
-% exportgraphics(fig_3DHemisphere, 'fig_3D_hemisphere.png', 'Resolution', plotParameter.Resolution);
-% % Random
-% fig_3DRandom = figure; 
-% plot3DShape(fig_3DRandom, Random.N_desired, Random.Mask);
-% exportgraphics(fig_3DRandom, 'fig_3D_random.png', 'Resolution', plotParameter.Resolution);
+% Plane
+fig_3DPlane = figure; 
+plot3DShape(fig_3DPlane, Plane.N_desired, Plane.Mask);
+exportgraphics(fig_3DPlane, 'fig_3D_plane.png', 'Resolution', plotParameter.Resolution);
+% Hemisphere
+fig_3DHemisphere = figure; 
+plot3DShape(fig_3DHemisphere, Hemisphere.N_desired, Hemisphere.Mask);
+exportgraphics(fig_3DHemisphere, 'fig_3D_hemisphere.png', 'Resolution', plotParameter.Resolution);
+% Random
+fig_3DRandom = figure; 
+plot3DShape(fig_3DRandom, Random.N_desired, Random.Mask);
+exportgraphics(fig_3DRandom, 'fig_3D_random.png', 'Resolution', plotParameter.Resolution);
 %% 
 num = 30;
 [errorBetaPlaneMean, errorBetaPlaneStd, betaPlaneList] = getErrorBetaMeanStd(Plane, num);
@@ -39,11 +39,11 @@ axis([0 betaPlaneList(end) 0 90]);
 set(gca, 'xtick', 0:15:45, 'ytick', 0:30:90, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
 exportgraphics(figPlaneMeanStd, 'fig_Error_Beta_Normal_Angle_Plane_Diffuse.png', 'Resolution', plotParameter.Resolution);
 % Hemisphere
-figHemisphereMeanStd = figure('Position', [100, 100, 850, 450]);   
-plotBetaMeanStd(figHemisphereMeanStd, errorBetaHemisphereMean, errorBetaHemisphereStd, betaHemisphereList, colors, plotParameter);
-axis([0 betaHemisphereList(end) 0 60]);
-set(gca, 'xtick', 0:10:30, 'ytick', 0:20:60, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
-exportgraphics(figHemisphereMeanStd, 'fig_Error_Beta_Normal_Angle_Hemisphere_Diffuse.png', 'Resolution', plotParameter.Resolution);
+% figHemisphereMeanStd = figure('Position', [100, 100, 850, 450]);   
+% plotBetaMeanStd(figHemisphereMeanStd, errorBetaHemisphereMean, errorBetaHemisphereStd, betaHemisphereList, colors, plotParameter);
+% axis([0 betaHemisphereList(end) 0 60]);
+% set(gca, 'xtick', 0:10:30, 'ytick', 0:20:60, 'FontSize', plotParameter.FontSize*plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
+% exportgraphics(figHemisphereMeanStd, 'fig_Error_Beta_Normal_Angle_Hemisphere_Diffuse.png', 'Resolution', plotParameter.Resolution);
 % Random
 figRandomMeanStd = figure('Position', [100, 100, 850, 450]);   
 plotBetaMeanStd(figRandomMeanStd, errorBetaRandomMean, errorBetaRandomStd, betaRandomList, colors, plotParameter);
@@ -103,57 +103,57 @@ exportgraphics(figPlanePers, 'fig_Error_Normal_Plane_Diffuse_pers.png', 'Resolut
 exportgraphics(figPlaneOrth, 'fig_Error_Normal_Plane_Diffuse_orth.png', 'Resolution', plotParameter.Resolution);
 exportgraphics(figPlaneIJCV, 'fig_Error_Normal_Plane_Diffuse_IJCV.png', 'Resolution', plotParameter.Resolution);
 %% Hemisphere
-% perspective
-figHemispherePers = figure('Position', [100, 100, 620, 420]);
-axPers = axes(figHemispherePers);
-h = imagesc(Hemisphere.error_N_angle_dp); set(h, 'AlphaData', Hemisphere.Mask); set(axPers, 'Color', 'w'); 
-axis equal; axis([0, col, 0, row]);
-% set(axPers, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
-set(gca, 'FontSize', plotParameter.FontSize * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
-set(gca, 'XTick', []);
-set(gca, 'YTick', []);
-xtickangle(0);
-colormap(axPers, parula); 
-colorbar(axPers); 
-% title('Ours', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
-% orthographic 
-figHemisphereOrth = figure('Position', [100, 100, 620, 420]);
-axOrth = axes(figHemisphereOrth);
-h = imagesc(Hemisphere.error_N_angle_dp_orth); set(h, 'AlphaData', Hemisphere.Mask); set(axOrth, 'Color', 'w'); 
-axis equal; axis([0, col, 0, row]);
-% set(axOrth, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
-set(gca, 'FontSize', plotParameter.FontSize * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
-set(gca, 'XTick', []);
-set(gca, 'YTick', []);
-xtickangle(0);
-colormap(axOrth, parula); 
-colorbar(axOrth); 
-% title('Orth.', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
-% IJCV
-figHemisphereIJCV = figure('Position', [100, 100, 620, 420]);
-axIJCV = axes(figHemisphereIJCV);
-h = imagesc(Hemisphere.error_N_angle_dp_IJCV); set(h, 'AlphaData', Hemisphere.Mask); set(axIJCV, 'Color', 'w'); 
-axis equal; axis([0, col, 0, row]);
-% set(axIJCV, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
-set(gca, 'FontSize', plotParameter.FontSize * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
-set(gca, 'XTick', []);
-set(gca, 'YTick', []);
-xtickangle(0);
-colormap(axIJCV, parula); 
-colorbar(axIJCV); 
-% title('GMPC', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
-% setup
-climPers = get(axPers, 'CLim');
-climOrth = get(axOrth, 'CLim');
-climIJCV = get(axIJCV, 'CLim');
-max_val = max([climPers(2), climOrth(2), climIJCV(2)]);
-set(axPers, 'CLim', [0, max_val]);
-set(axOrth, 'CLim', [0, max_val]);
-set(axIJCV, 'CLim', [0, max_val]);
-% output
-exportgraphics(figHemispherePers, 'fig_Error_Normal_Hemisphere_Diffuse_pers.png', 'Resolution', plotParameter.Resolution);
-exportgraphics(figHemisphereOrth, 'fig_Error_Normal_Hemisphere_Diffuse_orth.png', 'Resolution', plotParameter.Resolution);
-exportgraphics(figHemisphereIJCV, 'fig_Error_Normal_Hemisphere_Diffuse_IJCV.png', 'Resolution', plotParameter.Resolution);
+% % perspective
+% figHemispherePers = figure('Position', [100, 100, 620, 420]);
+% axPers = axes(figHemispherePers);
+% h = imagesc(Hemisphere.error_N_angle_dp); set(h, 'AlphaData', Hemisphere.Mask); set(axPers, 'Color', 'w'); 
+% axis equal; axis([0, col, 0, row]);
+% % set(axPers, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+% set(gca, 'FontSize', plotParameter.FontSize * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
+% set(gca, 'XTick', []);
+% set(gca, 'YTick', []);
+% xtickangle(0);
+% colormap(axPers, parula); 
+% colorbar(axPers); 
+% % title('Ours', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
+% % orthographic 
+% figHemisphereOrth = figure('Position', [100, 100, 620, 420]);
+% axOrth = axes(figHemisphereOrth);
+% h = imagesc(Hemisphere.error_N_angle_dp_orth); set(h, 'AlphaData', Hemisphere.Mask); set(axOrth, 'Color', 'w'); 
+% axis equal; axis([0, col, 0, row]);
+% % set(axOrth, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+% set(gca, 'FontSize', plotParameter.FontSize * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
+% set(gca, 'XTick', []);
+% set(gca, 'YTick', []);
+% xtickangle(0);
+% colormap(axOrth, parula); 
+% colorbar(axOrth); 
+% % title('Orth.', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
+% % IJCV
+% figHemisphereIJCV = figure('Position', [100, 100, 620, 420]);
+% axIJCV = axes(figHemisphereIJCV);
+% h = imagesc(Hemisphere.error_N_angle_dp_IJCV); set(h, 'AlphaData', Hemisphere.Mask); set(axIJCV, 'Color', 'w'); 
+% axis equal; axis([0, col, 0, row]);
+% % set(axIJCV, 'xtick', 0:400:1200, 'ytick', 0:250:1000, 'FontSize', plotParameter.FontSize  * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth );
+% set(gca, 'FontSize', plotParameter.FontSize * plotParameter.Scale, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
+% set(gca, 'XTick', []);
+% set(gca, 'YTick', []);
+% xtickangle(0);
+% colormap(axIJCV, parula); 
+% colorbar(axIJCV); 
+% % title('GMPC', 'FontSize', plotParameter.FontSize * plotParameter.Scale , 'FontName', 'Times New Roman');
+% % setup
+% climPers = get(axPers, 'CLim');
+% climOrth = get(axOrth, 'CLim');
+% climIJCV = get(axIJCV, 'CLim');
+% max_val = max([climPers(2), climOrth(2), climIJCV(2)]);
+% set(axPers, 'CLim', [0, max_val]);
+% set(axOrth, 'CLim', [0, max_val]);
+% set(axIJCV, 'CLim', [0, max_val]);
+% % output
+% exportgraphics(figHemispherePers, 'fig_Error_Normal_Hemisphere_Diffuse_pers.png', 'Resolution', plotParameter.Resolution);
+% exportgraphics(figHemisphereOrth, 'fig_Error_Normal_Hemisphere_Diffuse_orth.png', 'Resolution', plotParameter.Resolution);
+% exportgraphics(figHemisphereIJCV, 'fig_Error_Normal_Hemisphere_Diffuse_IJCV.png', 'Resolution', plotParameter.Resolution);
 %% Random
 % perspective
 figRandomPers = figure('Position', [100, 100, 620, 420]);
@@ -257,10 +257,10 @@ end
 function data_deg = Rad2Deg(data_rad)
     data_deg = data_rad;
     data_deg.Beta = rad2deg(data_rad.Beta);
-    data_deg.error_N_angle_dp = rad2deg(data_rad.error_N_angle_dp);
+    data_deg.error_N_angle_dp = rad2deg(data_rad.error_N_angle_dp_pers);
     data_deg.error_N_angle_dp_IJCV = rad2deg(data_rad.error_N_angle_dp_IJCV);
     data_deg.error_N_angle_dp_orth = rad2deg(data_rad.error_N_angle_dp_orth);
-    data_deg.error_N_angle_sp = rad2deg(data_rad.error_N_angle_sp);
+    data_deg.error_N_angle_sp = rad2deg(data_rad.error_N_angle_sp_pers);
     data_deg.error_N_angle_sp_IJCV = rad2deg(data_rad.error_N_angle_sp_IJCV);
     data_deg.error_N_angle_sp_orth = rad2deg(data_rad.error_N_angle_sp_orth);
 end
