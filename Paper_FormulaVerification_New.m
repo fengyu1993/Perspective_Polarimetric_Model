@@ -98,11 +98,11 @@ end
     error_phi_dp = getAngleError(Phi_desired, Phi_dp);
     subplot(1, 2, 2); imagesc(error_phi_dp); colormap(parula); colorbar; title('Perspective Diffuse Reflection: err_{\phi}');
     %% Check Theta specular reflection
-    Theta_sp = getZenithAngleSpecularReflection_Accurate(PolarImage_sp, Mask, Beta, Psi, eta);
+    Theta_sp = getZenithAngleSpecularReflection_Accurate(PolarImage_sp, Mask, Beta, Psi, eta, 1);
     error_theta_sp = getAngleError(Theta_desired, Theta_sp);
     figure('Position', [100, 100, 1050, 450]); subplot(1, 2, 1); imagesc(error_theta_sp); colormap(parula); colorbar; title('Perspective Specular Reflection: err_{\theta}');
     %% Check Theta diffuse reflection
-    Theta_dp = getZenithAngleDiffuseReflection_Accurate(PolarImage_dp, Mask, Beta, Psi, eta);
+    Theta_dp = getZenithAngleDiffuseReflection_Accurate(PolarImage_dp, Mask, Beta, Psi, eta, 1);
     error_theta_dp = getAngleError(Theta_desired, Theta_dp);
     subplot(1, 2, 2); imagesc(error_theta_dp); colormap(parula); colorbar; title('Perspective Diffuse Reflection: err_{\theta}');
     %% Check normal vector specular reflection

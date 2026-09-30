@@ -38,36 +38,24 @@ function N_IJCV = getSurfaceNormalFromDiffuseReflection_IJCV(PolarImage_dp, V, e
     Phi.dp1 = mod(Phi_dp, pi);
     Phi.dp2 = Phi.dp1 - pi;
     Rho_dp(Mask) = sqrt(S_list(2,:).^2 + S_list(3,:).^2) ./ S_list(1,:);
-    Theta_dp = getZenithAngleDiffuseReflection(Rho_dp ./ a, Mask, zeros(size(Mask)), eta);
+    Theta_dp = getZenithAngleDiffuseReflection_New(Rho_dp ./ a, Mask, zeros(size(Mask)), eta); 
     %% Step 6
     [row, col] = size(Mask);
     V_orth = zeros(row, col, 3); V_orth(:,:,3) = 1;
     N_dp_local_1 = getSurfaceNormal(V_orth, Theta_dp.dp1, Phi.dp1, Mask);
-    N_dp_local_2 = getSurfaceNormal(V_orth, Theta_dp.dp2, Phi.dp1, Mask);
-    N_dp_local_3 = getSurfaceNormal(V_orth, Theta_dp.dp1, Phi.dp2, Mask);
-    N_dp_local_4 = getSurfaceNormal(V_orth, Theta_dp.dp2, Phi.dp2, Mask);   
+    N_dp_local_2 = getSurfaceNormal(V_orth, Theta_dp.dp1, Phi.dp2, Mask); 
     %% Step 7
     num_pixels = size(R_list, 3);
     N_loc_flat1 = reshape(N_dp_local_1(repmat(Mask, [1 1 3])), [], 3)'; 
     N_loc_flat2 = reshape(N_dp_local_2(repmat(Mask, [1 1 3])), [], 3)'; 
-    N_loc_flat3 = reshape(N_dp_local_3(repmat(Mask, [1 1 3])), [], 3)'; 
-    N_loc_flat4 = reshape(N_dp_local_4(repmat(Mask, [1 1 3])), [], 3)'; 
     N_loc_page1 = reshape(N_loc_flat1, 3, 1, num_pixels);
     N_loc_page2 = reshape(N_loc_flat2, 3, 1, num_pixels);
-    N_loc_page3 = reshape(N_loc_flat3, 3, 1, num_pixels);
-    N_loc_page4 = reshape(N_loc_flat4, 3, 1, num_pixels);
     N_glo_page1 = pagemtimes(R_list, N_loc_page1);
     N_glo_page2 = pagemtimes(R_list, N_loc_page2);
-    N_glo_page3 = pagemtimes(R_list, N_loc_page3);
-    N_glo_page4 = pagemtimes(R_list, N_loc_page4);
     N_IJCV.dp1 = zeros(row, col, 3); 
     N_IJCV.dp2 = zeros(row, col, 3);
-    N_IJCV.dp3 = zeros(row, col, 3); 
-    N_IJCV.dp4 = zeros(row, col, 3);
     N_IJCV.dp1(repmat(Mask, [1 1 3])) = reshape(squeeze(N_glo_page1)', [], 1);
     N_IJCV.dp2(repmat(Mask, [1 1 3])) = reshape(squeeze(N_glo_page2)', [], 1);
-    N_IJCV.dp3(repmat(Mask, [1 1 3])) = reshape(squeeze(N_glo_page3)', [], 1);
-    N_IJCV.dp4(repmat(Mask, [1 1 3])) = reshape(squeeze(N_glo_page4)', [], 1);
 end
 
 
