@@ -3,12 +3,11 @@ clc; clear; close all;
 %% Initialization
 [location, name] = get_name_PPA();
 row = 1024; col = 1224;
-V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
-Beta_orth = zeros(row, col);
 %% Calculate
 Num = length(name);
-err_plot_ours = zeros(Num, 1);
+err_plot_Ours = zeros(Num, 1);
 err_plot_PPA = zeros(Num, 1);
+err_plot_Orth = zeros(Num, 1);
 for i = 1 : Num
     %% Data 
     % polarimetric image
@@ -27,6 +26,8 @@ for i = 1 : Num
     end
     V = -rays;
     V(:,:,1) = -V(:,:,1);
+    rays_orth = rays;
+    rays_orth(:,:,1) = 0; rays_orth(:,:,2) = 0; rays_orth(:,:,3) = 1;
     % Beta Psi
     Beta = getPerspectiveDistortionAngle(V, Mask);
     Psi = getPsiAngle(V, Mask);
@@ -35,35 +36,44 @@ for i = 1 : Num
     N_desired = extrinsic(1:3, 1:3) * normal_w;
     %% Methods
     % PPA
+    N_Orth = getSurfaceNormalFromSpecularReflection_PPA(polarImage, Mask, rays_orth);
+    % PPA
     N_PPA = getSurfaceNormalFromSpecularReflection_PPA(polarImage, Mask, rays);
     % ours
-    Phi_ours = getAzimuthAngleSpecularReflection_Accurate(polarImage, Mask, Beta, Psi);
+    Phi_Ours = getAzimuthAngleSpecularReflection_AccurateNew(polarImage, Mask, Beta, Psi);
     rays_reshaped = reshape(rays, [], 3);
     v = rays_reshaped(Mask(:), :)';
-    M = [-v(3,:)'.*sin(Phi_ours.sp1(Mask)), ...
-        -v(3,:)'.*cos(Phi_ours.sp1(Mask)), ...
-        v(2,:)' .* cos(Phi_ours.sp1(Mask)) + v(1,:)' .* sin(Phi_ours.sp1(Mask))];
+    M = [-v(3,:)'.*sin(Phi_Ours.sp1(Mask)), ...
+        -v(3,:)'.*cos(Phi_Ours.sp1(Mask)), ...
+        v(2,:)' .* cos(Phi_Ours.sp1(Mask)) + v(1,:)' .* sin(Phi_Ours.sp1(Mask))];
     N_ours = getNormalFromEigen(M);
     %% Error
+    % Orth
+    error_normal_angle = rad2deg(acos(min(max(N_Orth' * N_desired, -1), 1)));
+    err_plot_Orth(i) = error_normal_angle;    
     % PPA
     error_normal_angle = rad2deg(acos(min(max(N_PPA' * N_desired, -1), 1)));
     err_plot_PPA(i) = error_normal_angle;
     % ours
     error_normal_angle = rad2deg(acos(min(max(N_ours' * N_desired, -1), 1)));
-    err_plot_ours(i) = error_normal_angle;
+    err_plot_Ours(i) = error_normal_angle;
 end
 %% Plot
 figure; 
-plot(1:Num, err_plot_PPA);
+plot(1:Num, err_plot_Orth);
 hold on;
-plot(1:Num, err_plot_ours);
-
-
+plot(1:Num, err_plot_PPA);
+plot(1:Num, err_plot_Ours);
+set(gca, 'YScale', 'log');
+legend("Orth", "PPA", "Ours");
 %% Output
-fprintf('PPA dataset MAE (deg) Ours/PPA: %.3f / %.3f \n', mean(err_plot_ours), mean(err_plot_PPA));
-fprintf('PPA dataset SD (deg) Ours/PPA: %.3f / %.3f \n', std(err_plot_ours), std(err_plot_PPA));
-fprintf('PPA dataset RMSE (deg) Ours/PPA: %.3f / %.3f \n', sqrt(mean(err_plot_ours.^2)), sqrt(mean(err_plot_PPA.^2)));
-fprintf('PPA dataset Max (deg) Ours/PPA: %.3f / %.3f \n', max(err_plot_ours), max(err_plot_PPA));
+fprintf('PPA dataset MAE (deg) Ours/PPA/Orth: %.3f / %.3f / %.3f \n', mean(err_plot_Ours), mean(err_plot_PPA), mean(err_plot_Orth));
+fprintf('PPA dataset SD (deg) Ours/PPA/Orth: %.3f / %.3f / %.3f \n', std(err_plot_Ours), std(err_plot_PPA), std(err_plot_Orth));
+fprintf('PPA dataset RMSE (deg) Ours/PPA/Orth: %.3f / %.3f / %.3f \n', sqrt(mean(err_plot_Ours.^2)), sqrt(mean(err_plot_PPA.^2)), sqrt(mean(err_plot_Orth.^2)));
+fprintf('PPA dataset Max (deg) Ours/PPA/Orth: %.3f / %.3f / %.3f \n', max(err_plot_Ours), max(err_plot_PPA), max(err_plot_Orth));
+%% Save
+save('./Data/Data_ExperimentPlanePPADataset_OursVsPPA.mat',...
+    'err_plot_Orth', 'err_plot_PPA', 'err_plot_Ours');
 
 
 

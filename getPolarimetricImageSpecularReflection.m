@@ -8,11 +8,21 @@ function I_sp_phipol = getPolarimetricImageSpecularReflection(Phi_desired, Theta
     I_sp_max = R_s ./ (R_s + R_p) * Is;
     I_sp_min = R_p ./ (R_s + R_p) * Is;
     % function
-    I_sp_phipol_fun = @(Phi_pol)...
-        I_sp_min .* (cos(Beta).^2 .* cos(Phi_pol - Phi_desired) + sin(Phi_desired - Psi) .* sin(Beta).^2 .* sin(Phi_pol - Psi)).^2 ./ (cos(Beta).^2 + sin(Beta).^2 .* sin(Phi_desired - Psi).^2) ...
-        + I_sp_max .* (cos(Beta).^2 .* sin(Phi_pol - Phi_desired).^2) ./ (cos(Beta).^2 + sin(Beta).^2 .* sin(Phi_desired - Psi).^2);
-    I_sp_phipol.I0 = I_sp_phipol_fun(0);
-    I_sp_phipol.I45 = I_sp_phipol_fun(pi/4);
-    I_sp_phipol.I90 = I_sp_phipol_fun(pi/2);
-    I_sp_phipol.I135 = I_sp_phipol_fun(3*pi/4);
+    I_p = I_sp_min;
+    I_s = I_sp_max;
+    function I_pol = I_phipol_fun(Phi_pol)
+        epsilon = Phi_pol - Psi;
+        delta = Phi_desired - Psi; 
+        q = cos(epsilon).^2 + cos(Beta).^2.*sin(epsilon).^2;
+        L = sqrt(cos(Beta).^2 + sin(Beta).^2.*sin(delta).^2);
+        cos_gamma_p = cos(Beta) .* cos(delta) ./ L;
+        sin_gamma_p = sin(delta) ./ L;
+        I_pol = I_p ./ q .* (cos_gamma_p .* cos(epsilon) + cos(Beta).*sin_gamma_p.*sin(epsilon)).^2 + ...
+            I_s ./ q .* (sin_gamma_p .* cos(epsilon) - cos(Beta).*cos_gamma_p.*sin(epsilon)).^2; 
+    end
+    % output
+    I_sp_phipol.I0 = I_phipol_fun(0);
+    I_sp_phipol.I45 = I_phipol_fun(pi/4);
+    I_sp_phipol.I90 = I_phipol_fun(pi/2);
+    I_sp_phipol.I135 = I_phipol_fun(3*pi/4);
 end

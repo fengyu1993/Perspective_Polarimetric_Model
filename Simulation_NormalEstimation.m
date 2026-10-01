@@ -13,7 +13,7 @@ Beta = getPerspectiveDistortionAngle(V, Mask);
 Beta_orth = zeros(size(Beta));
 Psi = getPsiAngle(V, Mask);
 % normal vector
-flag = 3;
+flag = 1;
 if flag ==  1% plane
     [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectivePlane(V, row, col, K);
 elseif flag == 2 % hemisphere
@@ -30,7 +30,7 @@ Parameter_dp.Psi = Psi; Parameter_dp.Beta = Beta; Parameter_dp.eta = eta; Parame
 PolarImage_dp = getPolarimetricImageDiffuseReflection(Phi_desired, Theta_desired, Parameter_dp);
 %% Methods Specular Reflection
 % Perspective accurate
-N_sp_pers = getSurfaceNormalFromSpecularReflection_Accurate(PolarImage_sp, Psi, Beta, V, eta, Mask);
+N_sp_pers = getSurfaceNormalFromSpecularReflection_AccurateNew(PolarImage_sp, Psi, Beta, V, eta, 1, Mask);
 % Perspective approximation
 N_sp_pers_approx = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta, V, eta, 1, Mask);
 % Orthographic 
@@ -39,7 +39,7 @@ N_sp_orth = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta_orth, V_o
 N_sp_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(PolarImage_sp, V, eta, 1, Mask);
 %% Methods Diffuse Reflection
 % Perspective accurate
-N_dp_pers = getSurfaceNormalFromDiffuseReflection_Accurate(PolarImage_dp, Psi, Beta, V, eta, Mask);
+N_dp_pers = getSurfaceNormalFromDiffuseReflection_AccurateNew(PolarImage_dp, Psi, Beta, V, eta, 1, Mask);
 % Perspective approximation
 N_dp_pers_approx = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta, V, eta, 1, Mask);
 % Orthographic 
