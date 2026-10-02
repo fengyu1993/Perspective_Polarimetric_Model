@@ -5,20 +5,20 @@ clc; clear; close all;
 row = 1024; col = 1224;
 V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
 Beta_orth = zeros(row, col);
-num_A = 25;
-num_ETA = 12;
-a_list = linspace(0.05, 0.7, num_A);
-eta_list = linspace(1.3, 1.7, num_ETA);
+num_A = 30;
+num_ETA = 25;
+a_list = linspace(0.4, 0.8, num_A);
+eta_list = linspace(1.4, 1.7, num_ETA);
 [A, ETA] = meshgrid(a_list, eta_list);
 %% Calculate
-error_all_N_angle = NaN(num_ETA, num_A);
+error_all_N_angle_ours = NaN(num_ETA, num_A);
 error_all_N_angle_orth = NaN(num_ETA, num_A);
 error_all_N_angle_IJCV = NaN(num_ETA, num_A);
 for a_cnt = 1 : length(a_list)
     a = a_list(a_cnt);
     for eta_cnt = 1 : length(eta_list)
         eta = eta_list(eta_cnt);
-        err_plot = zeros(row, col);
+        err_plot_ours = zeros(row, col);
         err_plot_orth = zeros(row, col);
         err_plot_IJCV = zeros(row, col);
         sumMask = zeros(row, col);
@@ -33,50 +33,52 @@ for a_cnt = 1 : length(a_list)
             V = -load([location, 'our_rays.mat']).data; 
             % Beta
             Beta = getPerspectiveDistortionAngle(V, Mask);
+            % Psi
+            Psi = getPsiAngle(V, Mask);
             % normal
             poseMatrix = readmatrix([location, name{i}, '_pose.txt']);
             n = poseMatrix(1:3, 1:3) * [0; 0; 1];
             N_desired = repmat(reshape(n, 1, 1, 3), 1024, 1224);
             %% Methods
             % Perspective 
-            N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
+            N_ours = getSurfaceNormalFromSpecularReflection_AccurateNew(polarImage, Psi, Beta, V, eta, a, Mask);
             % Orthographic 
             N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
             % IJCV 
             N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(polarImage, V, eta, a, Mask);
             %% Error
-            err_N_angle = getErrorNormalAngle(N, N_desired, Mask);
+            err_N_angle_ours = getErrorNormalAngle(N_ours, N_desired, Mask);
             error_N_angle_orth = getErrorNormalAngle(N_orth, N_desired, Mask);
             error_N_angle_IJCV = getErrorNormalAngle(N_IJCV, N_desired, Mask);
             %% Statistics
-            err_plot(Mask) = err_plot(Mask) + err_N_angle(Mask);
+            err_plot_ours(Mask) = err_plot_ours(Mask) + err_N_angle_ours(Mask);
             err_plot_orth(Mask) = err_plot_orth(Mask) + error_N_angle_orth(Mask);
             err_plot_IJCV(Mask) = err_plot_IJCV(Mask) + error_N_angle_IJCV(Mask);
             sumMask(Mask) = sumMask(Mask) + 1;
        end
         id = sumMask > 0;
-        err_mean = err_plot(id) ./ sumMask(id);
+        err_ours_mean = err_plot_ours(id) ./ sumMask(id);
         err_orth_mean = err_plot_orth(id) ./ sumMask(id);
         err_IJCV_mean = err_plot_IJCV(id) ./ sumMask(id);
-        error_all_N_angle(eta_cnt, a_cnt) = mean(err_mean(:));
+        error_all_N_angle_ours(eta_cnt, a_cnt) = mean(err_ours_mean(:));
         error_all_N_angle_orth(eta_cnt, a_cnt) = mean(err_orth_mean(:));
         error_all_N_angle_IJCV(eta_cnt, a_cnt) = mean(err_IJCV_mean(:));
         %% Plot
-        fprintf('IJCV dataset MAE perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_all_N_angle(eta_cnt, a_cnt), error_all_N_angle_orth(eta_cnt, a_cnt), error_all_N_angle_IJCV(eta_cnt, a_cnt));
+        fprintf('IJCV dataset MAE perspective/orthographic/IJCV: %.3f / %.3f / %.3f\n', error_all_N_angle_ours(eta_cnt, a_cnt), error_all_N_angle_orth(eta_cnt, a_cnt), error_all_N_angle_IJCV(eta_cnt, a_cnt));
     end
 end
 %%
 figure; 
 hold on; grid on;
-surf(A, ETA, rad2deg(error_all_N_angle), 'FaceAlpha', 0.8, 'EdgeColor', 'none'); 
+surf(A, ETA, rad2deg(error_all_N_angle_ours), 'FaceAlpha', 0.8, 'EdgeColor', 'none'); 
 mesh(A, ETA, rad2deg(error_all_N_angle_orth), 'EdgeColor', 'g'); 
 mesh(A, ETA, rad2deg(error_all_N_angle_IJCV), 'EdgeColor', 'r'); 
 view([30,10]);
 legend('Ours', 'Orthographic', 'IJCV');
 xlabel('a'); ylabel('\eta'); zlabel('Mean Error');
 %%
-% save('./Data/Data_IJCV_dataset_test_A_ETA.mat', 'A', 'ETA', ...
-%     'error_all_N_angle', 'error_all_N_angle_orth', 'error_all_N_angle_IJCV');
+save('./Data/Data_IJCV_dataset_test_A_ETA.mat', 'A', 'ETA', ...
+    'error_all_N_angle_ours', 'error_all_N_angle_orth', 'error_all_N_angle_IJCV');
 
 %%
 function [location, name] = get_name_IJCV()

@@ -53,7 +53,7 @@ xlim([0, 8]);
 ylim(y_limits);
 set(gca, 'YScale', 'log');
 %  x=2 (PPA)  x=6 (IJCV)
-set(gca, 'XTick', [2, 6], 'XTickLabel', {'PPA dataset', 'GMPC dataset'}); 
+set(gca, 'XTick', [2, 6], 'XTickLabel', {'PPA dataset', 'GMPC dataset'}, 'FontName', 'Times New Roman'); 
 set(gca, 'TickDir', 'out', 'TickLength', [0.015 0.015]); 
 set(gca, 'YGrid', 'on', 'YMinorGrid', 'off', 'XGrid', 'off');
 set(gca, 'GridLineStyle', '--', 'GridAlpha', 0.4);
@@ -76,14 +76,16 @@ set(gca, 'FontSize', FontSize*Scale, 'FontName', 'Times New Roman', 'LineWidth',
 set(gca, 'Box', 'off');
 line([0, 8], [100, 100], 'Color', 'k', 'LineWidth', LineWidth, 'HandleVisibility', 'off');
 line([8, 8], [0.05, 100], 'Color', 'k', 'LineWidth', LineWidth, 'HandleVisibility', 'off');
+
+
 %% Output
 errors = [error_data_PPA; error_data_IJCV];
 err_Ours = errors(:,1);
 err_PPA = errors(:,2);
 err_Orth = errors(:,3);
-fprintf("Median Ours / PPA / Orth: %.2f, %.2f, %.2f\n", median(err_Ours), median(err_PPA), median(err_Orth));
-(median(err_PPA) - median(err_Ours)) / median(err_PPA) * 100
-(median(err_Orth) - median(err_Ours)) / median(err_Orth) * 100
+fprintf("MAE Ours / PPA / Orth: %.2f, %.2f, %.2f\n", mean(err_Ours), mean(err_PPA), mean(err_Orth));
+(mean(err_PPA) - mean(err_Ours)) / mean(err_PPA) * 100
+(mean(err_Orth) - mean(err_Ours)) / mean(err_Orth) * 100
 %% Save Figure
 exportgraphics(fig_Combined, 'fig_Error_PlaneNormal_PPAIJCVDataset.png', 'Resolution', Resolution);
 

@@ -1,4 +1,4 @@
-%% Real Data (PPA Dataset) Plane Comparision Ours VS. PPA
+%% Real Data (IJCV Dataset) Plane Comparision Ours VS. PPA
 clc; clear; close all;
 %% Initialization
 [location, name] = get_name_IJCV();

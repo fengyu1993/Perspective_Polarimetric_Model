@@ -2,8 +2,8 @@
 clc; clear; close all;
 %% Initialization
 [location, name] = get_name_PPA();
-a = 0.46;    % 0.320833 0.32
-eta = 1.62;  % 1.372727 1.4
+a = 0.46;    
+eta = 1.55;  
 row = 1024; col = 1224;
 V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
 Beta_orth = zeros(row, col);
