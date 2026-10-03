@@ -12,7 +12,7 @@ Resolution = 300;
 A   = S.A;
 ETA = S.ETA;
 
-E_ours = S.error_all_N_angle;
+E_ours = S.error_all_N_angle_ours;
 E_gmpc = S.error_all_N_angle_IJCV;
 E_orth = S.error_all_N_angle_orth;
 
