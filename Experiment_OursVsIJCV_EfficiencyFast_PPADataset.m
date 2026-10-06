@@ -159,16 +159,35 @@ for i = 1 : length(name)
         inner = min(max(inner, 0), 1); 
         theta = acos(sqrt(inner));
         % normal
-        d_1 = [cos(phi_sp1); sin(phi_sp1); 0];
-        d_2 = [cos(phi_sp2); sin(phi_sp2); 0];
-        e_s1 = cross(v, d_1); e_s1 = e_s1 ./ norm(e_s1);
-        e_s2 = cross(v, d_2); e_s2 = e_s2 ./ norm(e_s2);
-        e_p1 = cross(e_s1, v);
-        e_p2 = cross(e_s2, v);
-        N_ours.sp1(row, col, :) = v * cos(theta(1)) + e_p1 * sin(theta(1));
-        N_ours.sp2(row, col, :) = v * cos(theta(1)) + e_p2 * sin(theta(1));
-        N_ours.sp3(row, col, :) = v * cos(theta(2)) + e_p1 * sin(theta(2));
-        N_ours.sp4(row, col, :) = v * cos(theta(2)) + e_p2 * sin(theta(2));
+        d = [cos(phi_sp1); sin(phi_sp1); 0];
+
+        e_s = cross(v, d);
+        e_s = e_s / norm(e_s);
+        e_p = cross(e_s, v);
+        
+        ct = cos(theta);
+        st = sin(theta);
+        
+        v1 = v * ct(1);
+        p1 = e_p * st(1);
+        v2 = v * ct(2);
+        p2 = e_p * st(2);
+        
+        N_ours.sp1(row,col,:) = v1 + p1;
+        N_ours.sp2(row,col,:) = v1 - p1;
+        N_ours.sp3(row,col,:) = v2 + p2;
+        N_ours.sp4(row,col,:) = v2 - p2;
+
+%         d_1 = [cos(phi_sp1); sin(phi_sp1); 0];
+%         d_2 = [cos(phi_sp2); sin(phi_sp2); 0];
+%         e_s1 = cross(v, d_1); e_s1 = e_s1 ./ norm(e_s1);
+%         e_s2 = cross(v, d_2); e_s2 = e_s2 ./ norm(e_s2);
+%         e_p1 = cross(e_s1, v);
+%         e_p2 = cross(e_s2, v);
+%         N_ours.sp1(row, col, :) = v * cos(theta(1)) + e_p1 * sin(theta(1));
+%         N_ours.sp2(row, col, :) = v * cos(theta(1)) + e_p2 * sin(theta(1));
+%         N_ours.sp3(row, col, :) = v * cos(theta(2)) + e_p1 * sin(theta(2));
+%         N_ours.sp4(row, col, :) = v * cos(theta(2)) + e_p2 * sin(theta(2));
     end
     time_ours(i) = toc(timer);
     time_ours(i) = time_ours(i) / length(rowMask); 
@@ -241,9 +260,9 @@ fprintf('PPA dataset Max (deg) ours/IJCV: %.3f / %.3f\n', rad2deg(max(err_plot_o
 fprintf("All Data Timing Ours / IJCV: %.2e x1, %.2e x%.2f\n", mean(time_ours(:)), mean(time_IJCV(:)), mean(time_IJCV(:))/mean(time_ours(:)));
 
 %% Save
-save('./Data/Data_ExperimentPlanePPADataset_EfficiencyFast.mat', 'id',...
-    'err_plot_ours_mean', 'err_plot_IJCV_mean',...
-    'time_ours', 'time_IJCV');
+% save('./Data/Data_ExperimentPlanePPADataset_EfficiencyFast.mat', 'id',...
+%     'err_plot_ours_mean', 'err_plot_IJCV_mean',...
+%     'time_ours', 'time_IJCV');
 
 
 

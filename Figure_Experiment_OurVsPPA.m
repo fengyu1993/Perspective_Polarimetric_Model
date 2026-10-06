@@ -87,7 +87,7 @@ fprintf("MAE Ours / PPA / Orth: %.2f, %.2f, %.2f\n", mean(err_Ours), mean(err_PP
 (mean(err_PPA) - mean(err_Ours)) / mean(err_PPA) * 100
 (mean(err_Orth) - mean(err_Ours)) / mean(err_Orth) * 100
 %% Save Figure
-exportgraphics(fig_Combined, 'fig_Error_PlaneNormal_PPAIJCVDataset.png', 'Resolution', Resolution);
+exportgraphics(fig_Combined, 'fig_OursVsPPA_Error_PlaneNormal_PPAIJCVDataset.png', 'Resolution', Resolution);
 
 
 
