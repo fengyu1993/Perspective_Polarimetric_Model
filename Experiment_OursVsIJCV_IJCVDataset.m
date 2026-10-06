@@ -2,17 +2,18 @@
 clc; clear; close all;
 %% Initialization
 [location, name] = get_name_IJCV();
-a = 0.73;    % 0.41 0.48 0.5
-eta = 1.57;  % 1.70 1.37 1.39
+a = 0.70;    % 0.41 0.48 0.5
+eta = 1.55;  % 1.70 1.37 1.39
 row = 1024; col = 1224;
 V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
 Beta_orth = zeros(row, col);
 %% Calculate
-err_plot_ours = zeros(row, col);
+cnt_time = 5;
+err_plot_ours = zeros(row, col); 
 err_plot_orth = zeros(row, col);
-err_plot_IJCV = zeros(row, col);
+err_plot_IJCV = zeros(row, col); 
 sumMask = zeros(row, col);
-for i = 1 : 10%length(name)
+for i = 1 : length(name)
     fprintf('Processing Image %i/%i...\n', i, length(name));
     %% Data 
     % polarimetric image
@@ -42,7 +43,7 @@ for i = 1 : 10%length(name)
     % IJCV 
     N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(polarImage, V, eta, a, Mask);
     N_IJCV.sp1(:,:,1) = -N_IJCV.sp1(:,:,1);   N_IJCV.sp2(:,:,1) = -N_IJCV.sp2(:,:,1);
-    N_IJCV.sp3(:,:,1) = -N_IJCV.sp3(:,:,1);   N_IJCV.sp4(:,:,1) = -N_IJCV.sp4(:,:,1);
+    N_IJCV.sp3(:,:,1) = -N_IJCV.sp3(:,:,1);   N_IJCV.sp4(:,:,1) = -N_IJCV.sp4(:,:,1);  
     %% Error
     error_n_ours = getErrorNormalAngle(N_ours, N_desired, Mask);
     error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);

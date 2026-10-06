@@ -1,6 +1,7 @@
 %% Experiment Our VS IJCV: IJCV Dataset
 clc; clear; close all;
 %%
+load('./Data/Data_IJCV_dataset_test_A_ETA_D303.mat');
 load('./Data/Data_ExperimentPlaneIJCVDataset.mat');
 S = load('./Data/Data_IJCV_dataset_test_A_ETA.mat');
 %%
@@ -95,25 +96,81 @@ xlabel(ax1, '$a$', 'Interpreter', 'latex', 'FontName', 'Times New Roman');
 ylabel(ax1, '$\eta$', 'Interpreter', 'latex', 'FontName', 'Times New Roman');
 zlabel(ax1, 'MAE $(^\circ)$', 'Interpreter', 'latex', 'FontName', 'Times New Roman');
 
-legend(ax1, h, methods, 'Location', 'best');
-
-view(ax1, -15, 20);
+view(ax1, -15, 20);view(ax1, -170, 15);
 axis(ax1, 'tight');
-xlim(ax1, [0.4, 0.8]); ylim(ax1, [1.4, 1.7]); zlim(ax1, [0, 20]);
-xticks(ax1, 0.4:0.1:0.8); yticks(ax1, 1.4:0.1:1.7); zticks(ax1, 0:4:20);
+xlim(ax1, [0.4, 0.8]); ylim(ax1, [1.4, 1.7]); zlim(ax1, [0, 25]);
+xticks(ax1, 0.4:0.1:0.8); yticks(ax1, 1.4:0.1:1.7); zticks(ax1, 0:5:25);
+
+% Mark the selected minimum-MAE parameter pair
+aBest   = 0.70;
+etaBest = 1.55;
+z = [3.552, 3.555, 15.408];
+
+hold(ax1, 'on');
+
+% Guide lines (current axis limits)
+xRange = xlim(ax1);
+yRange = ylim(ax1);
+zRange = zlim(ax1);
+zBase = zRange(1);
+
+guideColor = [255, 190, 122] / 255;
+
+% Vertical guide through the three points
+plot3(ax1, [aBest, aBest], [etaBest, etaBest], ...
+    [min(zRange), max(z)], '--*', ...
+    'Color', guideColor, 'LineWidth', LineWidth, ...
+    'HandleVisibility', 'off', 'MarkerSize', 10);
+
+% Bottom-plane guide to the a-axis
+plot3(ax1, [aBest, aBest], [yRange(1), etaBest], ...
+    [zBase, zBase], '--', ...
+    'Color', guideColor, 'LineWidth', LineWidth, ...
+    'HandleVisibility', 'off');
+
+% Bottom-plane guide to the eta-axis
+plot3(ax1, [xRange(1), aBest], [etaBest, etaBest], ...
+    [zBase, zBase], '--', ...
+    'Color', guideColor, 'LineWidth', LineWidth);
+
+% Mark the three MAE values
+for k = 1:3
+    plot3(ax1, aBest, etaBest, z(k), 'p', ...
+        'MarkerSize', 16, ...
+        'MarkerFaceColor', guideColor, ...
+        'MarkerEdgeColor', 'k', ...
+        'LineWidth', 1.5, ...
+        'HandleVisibility', 'off');
+end
+
+label = sprintf( ...
+    '$a^*=%.2f$, $\\eta^*=%.2f$', ...
+    aBest, etaBest);
+text(ax1, aBest + 0.05, etaBest+0.015, -2, label, ...
+    'Interpreter', 'latex', ...
+    'FontSize', FontSize*Scale, ...
+    'Color', 'k', ...
+    'Margin', 3, ...
+    'HandleVisibility', 'off');
 
 grid(ax1, 'on');
 box(ax1, 'on');
 
+legend(ax1, h(1:3), methods, 'Location', 'east');
+
 set(ax1, ...
         'FontName', 'Times New Roman', ...
-        'FontSize', FontSize*Scale, ...
+        'FontSize', FontSize*Scale*1.2, ...
         'LineWidth', LineWidth, ...
         'LabelFontSizeMultiplier', 1, ...
         'TitleFontSizeMultiplier', 1);
 
+set(gca, 'XTickLabelRotation', 0);
+set(gca, 'YTickLabelRotation', 0);
+set(gca, 'ZTickLabelRotation', 0);
+
 set([ax1.XLabel, ax1.YLabel, ax1.ZLabel, ax1.Title], ...
-        'FontSize', FontSize*Scale);
+        'FontSize', FontSize*Scale*1.2);
 set(gca, 'Units', 'normalized');
 ti = get(gca, 'TightInset'); 
 set(gca, 'Position', [ti(1) ti(2) 1-ti(3)-ti(1) 1-ti(4)-ti(2)]);
@@ -263,7 +320,7 @@ set(axOrthBottom, ...
 
 colormap(axOrthBottom, parula);
 
-cb = colorbar(axOrthBottom, 'southoutside');
+cb = colorbar(axOrthBottom, 'eastoutside');
 set(cb, ...
     'FontSize', FontSize * Scale * 1.2, ...
     'FontName', 'Times New Roman');
