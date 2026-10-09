@@ -33,8 +33,8 @@ exportgraphics(figRandomMeanStd_sp, 'fig_Error_Beta_Normal_Angle_Random_Specular
 [errorBetaRandomMean_dp, errorBetaRandomStd_dp, betaRandomList_dp] = getErrorBetaMeanStd_dp(Random, num);
 figRandomMeanStd_dp = figure('Position', [100, 100, 750, 420]);  
 plotBetaMeanStd(figRandomMeanStd_dp, errorBetaRandomMean_dp, errorBetaRandomStd_dp, betaRandomList_dp, colors, plotParameter);
-axis([0 betaRandomList_dp(end) 0 60]);
-set(gca, 'xtick', 0:15:45, 'ytick', 0:20:60, 'FontSize', plotParameter.FontSize*plotParameter.Scale*1.2, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
+axis([0 betaRandomList_dp(end) 0 40]);
+set(gca, 'xtick', 0:15:45, 'ytick', 0:10:40, 'FontSize', plotParameter.FontSize*plotParameter.Scale*1.2, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
 exportgraphics(figRandomMeanStd_dp, 'fig_Error_Beta_Normal_Angle_Random_Diffuse.png', 'Resolution', plotParameter.Resolution);
 %% Random specular
 % perspective

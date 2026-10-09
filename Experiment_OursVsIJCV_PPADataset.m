@@ -49,7 +49,7 @@ for i = 1 : length(name)
     N_orth.sp1(:,:,1) = -N_orth.sp1(:,:,1);   N_orth.sp2(:,:,1) = -N_orth.sp2(:,:,1);
     N_orth.sp3(:,:,1) = -N_orth.sp3(:,:,1);   N_orth.sp4(:,:,1) = -N_orth.sp4(:,:,1);
     % IJCV 
-    N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(polarImage, V, eta, a, Mask);
+    N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(polarImage, -V, eta, a, Mask);
     N_IJCV.sp1(:,:,1) = -N_IJCV.sp1(:,:,1);   N_IJCV.sp2(:,:,1) = -N_IJCV.sp2(:,:,1);
     N_IJCV.sp3(:,:,1) = -N_IJCV.sp3(:,:,1);   N_IJCV.sp4(:,:,1) = -N_IJCV.sp4(:,:,1);
     %% Error

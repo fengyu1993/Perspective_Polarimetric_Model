@@ -18,6 +18,7 @@ plot3DShape(fig_3DPlane, Plane.N_desired, Plane.Mask);
 exportgraphics(fig_3DPlane, 'fig_3D_plane.png', 'Resolution', plotParameter.Resolution);
 % Hemisphere
 fig_3DHemisphere = figure; 
+% Hemisphere.N_desired(:,:,3) = -Hemisphere.N_desired(:,:,3);
 plot3DShape(fig_3DHemisphere, Hemisphere.N_desired, Hemisphere.Mask);
 exportgraphics(fig_3DHemisphere, 'fig_3D_hemisphere.png', 'Resolution', plotParameter.Resolution);
 %% Beta -- Error
