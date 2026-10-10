@@ -19,16 +19,13 @@ function [Phi, Theta] = getPhiTheta(N, V, Mask)
     Theta(Mask) = Theta_valid;
     
     e_s = cross(V_valid, N_valid, 2);
-    e_s_norm = max(sqrt(sum(e_s.^2, 2)), 1e-12); 
-    e_s = e_s ./ e_s_norm;
+    e_s_norm = sqrt(sum(e_s.^2, 2));
+    hasAzimuth = e_s_norm > 1e-12;
     
-    Phi_valid = atan2(-e_s(:,1), e_s(:,2));
+    Phi_valid = NaN(size(dot_prod));
     
-    Proj = N_valid - sum(N_valid .* V_valid, 2) .* V_valid;
-    D1 = [cos(Phi_valid), sin(Phi_valid), zeros(length(Phi_valid), 1)];
+    Phi_valid(hasAzimuth) = atan2( ...
+        -e_s(hasAzimuth, 1), e_s(hasAzimuth, 2));
     
-    id = sum(Proj .* D1, 2) < 0;
-    Phi_valid(id) = Phi_valid(id) + pi;
-    
-    Phi(Mask) = wrapToPi(Phi_valid);
+    Phi(Mask) = Phi_valid;
 end

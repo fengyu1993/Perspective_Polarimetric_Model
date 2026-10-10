@@ -5,7 +5,7 @@ clc; clear; close all;
 a = 0.46;    
 eta = 1.55;  %1.55
 row = 1024; col = 1224;
-V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
+V_orth = zeros(row, col, 3); V_orth(:,:,3) = 1;
 Beta_orth = zeros(row, col);
 %% Calculate
 cnt_time = 5;
@@ -29,8 +29,7 @@ for i = 1 : length(name)
         v = K \ x;
         rays(rows(cut), cols(cut), :) = v / norm(v);
     end
-    V = -rays;
-    V(:,:,1) = -V(:,:,1);
+    V = -rays; V(:,:,2) = -V(:,:,2); V(:,:,3) = -V(:,:,3);
     % Beta
     Beta = getPerspectiveDistortionAngle(V, Mask);
     % Psi
@@ -42,16 +41,22 @@ for i = 1 : length(name)
     %% Methods
     % Perspective accurate
     N_ours = getSurfaceNormalFromSpecularReflection_AccurateNew(polarImage, Psi, Beta, V, eta, a, Mask);
-    N_ours.sp1(:,:,1) = -N_ours.sp1(:,:,1);   N_ours.sp2(:,:,1) = -N_ours.sp2(:,:,1);
-    N_ours.sp3(:,:,1) = -N_ours.sp3(:,:,1);   N_ours.sp4(:,:,1) = -N_ours.sp4(:,:,1);
+    N_ours.sp1(:,:,2) = -N_ours.sp1(:,:,2);   N_ours.sp1(:,:,3) = -N_ours.sp1(:,:,3);  
+    N_ours.sp2(:,:,2) = -N_ours.sp2(:,:,2);   N_ours.sp2(:,:,3) = -N_ours.sp2(:,:,3);
+    N_ours.sp3(:,:,2) = -N_ours.sp3(:,:,2);   N_ours.sp3(:,:,3) = -N_ours.sp3(:,:,3);
+    N_ours.sp4(:,:,2) = -N_ours.sp4(:,:,2);   N_ours.sp4(:,:,3) = -N_ours.sp4(:,:,3);
     % Orthographic 
-    N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
-    N_orth.sp1(:,:,1) = -N_orth.sp1(:,:,1);   N_orth.sp2(:,:,1) = -N_orth.sp2(:,:,1);
-    N_orth.sp3(:,:,1) = -N_orth.sp3(:,:,1);   N_orth.sp4(:,:,1) = -N_orth.sp4(:,:,1);
+    N_orth = getSurfaceNormalFromSpecularReflection_AccurateNew(polarImage, Psi, Beta_orth, V_orth, eta, a, Mask);
+    N_orth.sp1(:,:,2) = -N_orth.sp1(:,:,2);   N_orth.sp1(:,:,3) = -N_orth.sp1(:,:,3);  
+    N_orth.sp2(:,:,2) = -N_orth.sp2(:,:,2);   N_orth.sp2(:,:,3) = -N_orth.sp2(:,:,3);
+    N_orth.sp3(:,:,2) = -N_orth.sp3(:,:,2);   N_orth.sp3(:,:,3) = -N_orth.sp3(:,:,3);
+    N_orth.sp4(:,:,2) = -N_orth.sp4(:,:,2);   N_orth.sp4(:,:,3) = -N_orth.sp4(:,:,3);
     % IJCV 
-    N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(polarImage, -V, eta, a, Mask);
-    N_IJCV.sp1(:,:,1) = -N_IJCV.sp1(:,:,1);   N_IJCV.sp2(:,:,1) = -N_IJCV.sp2(:,:,1);
-    N_IJCV.sp3(:,:,1) = -N_IJCV.sp3(:,:,1);   N_IJCV.sp4(:,:,1) = -N_IJCV.sp4(:,:,1);
+    N_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(polarImage, V, eta, a, Mask);
+    N_IJCV.sp1(:,:,2) = -N_IJCV.sp1(:,:,2);   N_IJCV.sp1(:,:,3) = -N_IJCV.sp1(:,:,3);  
+    N_IJCV.sp2(:,:,2) = -N_IJCV.sp2(:,:,2);   N_IJCV.sp2(:,:,3) = -N_IJCV.sp2(:,:,3);
+    N_IJCV.sp3(:,:,2) = -N_IJCV.sp3(:,:,2);   N_IJCV.sp3(:,:,3) = -N_IJCV.sp3(:,:,3);
+    N_IJCV.sp4(:,:,2) = -N_IJCV.sp4(:,:,2);   N_IJCV.sp4(:,:,3) = -N_IJCV.sp4(:,:,3);
     %% Error
     error_n_ours = getErrorNormalAngle(N_ours, N_desired, Mask);
     error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);

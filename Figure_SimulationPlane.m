@@ -18,7 +18,6 @@ plot3DShape(fig_3DPlane, Plane.N_desired, Plane.Mask);
 exportgraphics(fig_3DPlane, 'fig_3D_plane.png', 'Resolution', plotParameter.Resolution);
 % Hemisphere
 fig_3DHemisphere = figure; 
-% Hemisphere.N_desired(:,:,3) = -Hemisphere.N_desired(:,:,3);
 plot3DShape(fig_3DHemisphere, Hemisphere.N_desired, Hemisphere.Mask);
 exportgraphics(fig_3DHemisphere, 'fig_3D_hemisphere.png', 'Resolution', plotParameter.Resolution);
 %% Beta -- Error
@@ -27,8 +26,8 @@ num = 30;
 [errorBetaPlaneMean_sp, errorBetaPlaneStd_sp, betaPlaneList_sp] = getErrorBetaMeanStd_sp(Plane, num);
 figPlaneMeanStd_sp = figure('Position', [100, 100, 750, 420]);  
 plotBetaMeanStd(figPlaneMeanStd_sp, errorBetaPlaneMean_sp, errorBetaPlaneStd_sp, betaPlaneList_sp, colors, plotParameter);
-axis([0 betaPlaneList_sp(end) 0 30]);
-set(gca, 'xtick', 0:15:45, 'ytick', 0:10:30, 'FontSize', plotParameter.FontSize*plotParameter.Scale*1.2, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
+axis([0 betaPlaneList_sp(end) 0 40]);
+set(gca, 'xtick', 0:15:45, 'ytick', 0:10:40, 'FontSize', plotParameter.FontSize*plotParameter.Scale*1.2, 'FontName', 'Times New Roman', 'LineWidth', plotParameter.LineWidth);
 exportgraphics(figPlaneMeanStd_sp, 'fig_Error_Beta_Normal_Angle_Plane_Specular.png', 'Resolution', plotParameter.Resolution);
 % Plane diffuse
 [errorBetaPlaneMean_dp, errorBetaPlaneStd_dp, betaPlaneList_dp] = getErrorBetaMeanStd_dp(Plane, num);

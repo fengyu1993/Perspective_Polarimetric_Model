@@ -18,8 +18,7 @@ for cut = 1 : length(rowsMask)
     v = K \ x;
     rays(rowsMask(cut), colsMask(cut), :) = v / norm(v);
 end
-V = -rays;
-V(:,:,1) = -V(:,:,1);
+V = -rays; V(:,:,2) = -V(:,:,2); V(:,:,3) = -V(:,:,3);
 % Beta
 Beta = getPerspectiveDistortionAngle(V, Mask_temp);
 % Psi
@@ -66,8 +65,7 @@ for cut = 1 : length(rowsMask)
     v = K \ x;
     rays(rowsMask(cut), colsMask(cut), :) = v / norm(v);
 end
-V = -rays;
-V(:,:,1) = -V(:,:,1);
+V = -rays; V(:,:,2) = -V(:,:,2); V(:,:,3) = -V(:,:,3);
 
 angles = [0, pi/4, pi/2, 3*pi/4] + pi/2;
 
@@ -80,13 +78,16 @@ M_inv_list = NaN(3, 4, rows, cols);
 for r = 1 : rows
     for c = 1 : cols
         v = reshape(V(r,c,:), 3, 1);
-        r_z = -v;
+        r_z = v;
         r_x = cross([0;1;0], r_z);
         r_x = r_x / norm(r_x);
         r_y = cross(r_z, r_x);
         R = [r_x, r_y, r_z];
         P = R.' * A;                   % 3×4
-        alpha_modify = atan2(P(1,:), -P(2,:));
+        t = VecToso3([0; 0; 1]) * P;
+        colNorm = vecnorm(t, 2, 1);
+        t = t./ colNorm;
+        alpha_modify = atan2(t(2,:), t(1,:));
         M = 0.5 * [ones(4,1), ...
                    cos(2*alpha_modify).', ...
                    sin(2*alpha_modify).'];
@@ -95,12 +96,15 @@ for r = 1 : rows
         M_inv_list(:,:,r,c) = pinv(M);
     end
 end
+
 %% Calculate
 err_plot_ours = zeros(rows, cols); time_ours = NaN(length(name), 1);
 err_plot_IJCV = zeros(rows, cols); time_IJCV = NaN(length(name), 1);
 sumMask = zeros(rows, cols);
 for i = 1 : length(name)
     fprintf('Processing Image %i/%i...\n', i, length(name));
+    [extrinsic, intrinsic, undistort] = read_data([location, '\cams\'], [char(name{i}), '_cam.txt']);
+
     %% Data 
     % polarimetric image
     polarImage = readPolarimetricImage([location, '\images\'], [char(name{i}), '.png']); 
@@ -217,10 +221,10 @@ for i = 1 : length(name)
         inner = min(max(inner, 0), 1); 
         theta = acos(sqrt(inner));
         % normal
-        N_orth_sp1 = [sin(theta(1)) * cos(phi_sp1); sin(theta(1)) * sin(phi_sp1); -cos(theta(1))];
-        N_orth_sp2 = [sin(theta(2)) * cos(phi_sp1); sin(theta(2)) * sin(phi_sp1); -cos(theta(2))];
-        N_orth_sp3 = [sin(theta(1)) * cos(phi_sp2); sin(theta(1)) * sin(phi_sp2); -cos(theta(1))];
-        N_orth_sp4 = [sin(theta(2)) * cos(phi_sp2); sin(theta(2)) * sin(phi_sp2); -cos(theta(2))];
+        N_orth_sp1 = [sin(theta(1)) * cos(phi_sp1); sin(theta(1)) * sin(phi_sp1); cos(theta(1))];
+        N_orth_sp2 = [sin(theta(2)) * cos(phi_sp1); sin(theta(2)) * sin(phi_sp1); cos(theta(2))];
+        N_orth_sp3 = [sin(theta(1)) * cos(phi_sp2); sin(theta(1)) * sin(phi_sp2); cos(theta(1))];
+        N_orth_sp4 = [sin(theta(2)) * cos(phi_sp2); sin(theta(2)) * sin(phi_sp2); cos(theta(2))];
         N_IJCV.sp1(row, col, :) = R * N_orth_sp1;
         N_IJCV.sp2(row, col, :) = R * N_orth_sp2;
         N_IJCV.sp3(row, col, :) = R * N_orth_sp3;
@@ -229,10 +233,14 @@ for i = 1 : length(name)
     time_IJCV(i) = toc(timer);
     time_IJCV(i) = time_IJCV(i) / length(rowMask);  
     %% Modify
-    N_ours.sp1(:,:,1) = -N_ours.sp1(:,:,1);   N_ours.sp2(:,:,1) = -N_ours.sp2(:,:,1);
-    N_ours.sp3(:,:,1) = -N_ours.sp3(:,:,1);   N_ours.sp4(:,:,1) = -N_ours.sp4(:,:,1);
-    N_IJCV.sp1(:,:,1) = -N_IJCV.sp1(:,:,1);   N_IJCV.sp2(:,:,1) = -N_IJCV.sp2(:,:,1);
-    N_IJCV.sp3(:,:,1) = -N_IJCV.sp3(:,:,1);   N_IJCV.sp4(:,:,1) = -N_IJCV.sp4(:,:,1);  
+    N_ours.sp1(:,:,2) = -N_ours.sp1(:,:,2);   N_ours.sp1(:,:,3) = -N_ours.sp1(:,:,3);  
+    N_ours.sp2(:,:,2) = -N_ours.sp2(:,:,2);   N_ours.sp2(:,:,3) = -N_ours.sp2(:,:,3);
+    N_ours.sp3(:,:,2) = -N_ours.sp3(:,:,2);   N_ours.sp3(:,:,3) = -N_ours.sp3(:,:,3);
+    N_ours.sp4(:,:,2) = -N_ours.sp4(:,:,2);   N_ours.sp4(:,:,3) = -N_ours.sp4(:,:,3);
+    N_IJCV.sp1(:,:,2) = -N_IJCV.sp1(:,:,2);   N_IJCV.sp1(:,:,3) = -N_IJCV.sp1(:,:,3);  
+    N_IJCV.sp2(:,:,2) = -N_IJCV.sp2(:,:,2);   N_IJCV.sp2(:,:,3) = -N_IJCV.sp2(:,:,3);
+    N_IJCV.sp3(:,:,2) = -N_IJCV.sp3(:,:,2);   N_IJCV.sp3(:,:,3) = -N_IJCV.sp3(:,:,3);
+    N_IJCV.sp4(:,:,2) = -N_IJCV.sp4(:,:,2);   N_IJCV.sp4(:,:,3) = -N_IJCV.sp4(:,:,3);
     %% Error
     error_n_ours = getErrorNormalAngle(N_ours, N_desired, Mask);
     error_n_IJCV = getErrorNormalAngle(N_IJCV, N_desired, Mask);

@@ -24,8 +24,7 @@ for i = 1 : Num
         v = K \ x;
         rays(rows(cut), cols(cut), :) = v / norm(v);
     end
-    V = -rays;
-    V(:,:,1) = -V(:,:,1);
+    V = -rays; V(:,:,2) = -V(:,:,2); V(:,:,3) = -V(:,:,3);
     rays_orth = rays;
     rays_orth(:,:,1) = 0; rays_orth(:,:,2) = 0; rays_orth(:,:,3) = 1;
     % Beta Psi
@@ -41,12 +40,18 @@ for i = 1 : Num
     N_PPA = getSurfaceNormalFromSpecularReflection_PPA(polarImage, Mask, rays);
     % ours
     Phi_Ours = getAzimuthAngleSpecularReflection_AccurateNew(polarImage, Mask, Beta, Psi);
-    rays_reshaped = reshape(rays, [], 3);
-    v = rays_reshaped(Mask(:), :)';
-    M = [-v(3,:)'.*sin(Phi_Ours.sp1(Mask)), ...
-        -v(3,:)'.*cos(Phi_Ours.sp1(Mask)), ...
-        v(2,:)' .* cos(Phi_Ours.sp1(Mask)) + v(1,:)' .* sin(Phi_Ours.sp1(Mask))];
+    phi = Phi_Ours.sp1(Mask);
+    
+    V_flat = reshape(V, [], 3);
+    v = V_flat(Mask(:), :);
+    M = [-v(:,3) .* sin(phi), ...
+          v(:,3) .* cos(phi), ...
+          v(:,1) .* sin(phi) - v(:,2) .* cos(phi)];
     N_ours = getNormalFromEigen(M);
+    if dot(N_ours, mean(v, 1)') < 0
+        N_ours = -N_ours;
+    end
+    N_ours(2) = -N_ours(2); N_ours(3) = -N_ours(3);
     %% Error
     % Orth
     error_normal_angle = rad2deg(acos(min(max(N_Orth' * N_desired, -1), 1)));

@@ -4,11 +4,11 @@ clc; clear; close all;
 % configuration
 Is = 2; Id = 3;
 eta = 1.5; row = 1024; col = 1224;
-K = [-900, 0, 612; 0, -900, 512; 0, 0, 1]; 
+K = [900, 0, 612; 0, -900, 512; 0, 0, 1]; 
 mask = ones(row, col);  Mask = mask == 1;
 % parameter
 V = getViewingDirection(K, Mask);  
-V_orth = zeros(row, col, 3); V_orth(:,:,3) = -1;
+V_orth = zeros(row, col, 3); V_orth(:,:,3) = 1;
 Beta = getPerspectiveDistortionAngle(V, Mask);
 Beta_orth = zeros(size(Beta));
 Psi = getPsiAngle(V, Mask);
@@ -34,7 +34,7 @@ N_sp_pers = getSurfaceNormalFromSpecularReflection_AccurateNew(PolarImage_sp, Ps
 % Perspective approximation
 N_sp_pers_approx = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta, V, eta, 1, Mask);
 % Orthographic 
-N_sp_orth = getSurfaceNormalFromSpecularReflection(PolarImage_sp, Beta_orth, V_orth, eta, 1, Mask);
+N_sp_orth = getSurfaceNormalFromSpecularReflection_AccurateNew(PolarImage_sp, Psi, Beta_orth, V_orth, eta, 1, Mask);
 % IJCV 
 N_sp_IJCV = getSurfaceNormalFromSpecularReflection_IJCV(PolarImage_sp, V, eta, 1, Mask);
 %% Methods Diffuse Reflection
@@ -43,7 +43,7 @@ N_dp_pers = getSurfaceNormalFromDiffuseReflection_AccurateNew(PolarImage_dp, Psi
 % Perspective approximation
 N_dp_pers_approx = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta, V, eta, 1, Mask);
 % Orthographic 
-N_dp_orth = getSurfaceNormalFromDiffuseReflection(PolarImage_dp, Beta_orth, V_orth, eta, 1, Mask);
+N_dp_orth = getSurfaceNormalFromDiffuseReflection_AccurateNew(PolarImage_dp, Psi, Beta_orth, V_orth, eta, 1, Mask);
 % IJCV 
 N_dp_IJCV = getSurfaceNormalFromDiffuseReflection_IJCV(PolarImage_dp, V, eta, 1, Mask);
 %% Error analysis for specular reflection
@@ -116,15 +116,18 @@ end
 
 %%
 function [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectivePlane(V, row, col, K)
-    N_valid = [-0.619067296067796;   0.587481181114258;  -0.521173238737279];
-    N_valid = N_valid ./ norm(N_valid);
+    N_valid = [-sqrt(3)/3; sqrt(3)/3; sqrt(3)/3];
     
     Zc = 1100;     
-    Pc = [0; 0; Zc];   
+    Pc = [0; 0; -Zc];   
     W = 1200*1.3;    
     H = 700*1.3;     
 
-    temp_up = [0; -1; 0]; 
+    temp_up = [0; 1; 0]; 
+    if abs(dot(temp_up, N_valid)) > 0.99
+        temp_up = [1; 0; 0];
+    end
+
     U = cross(temp_up, N_valid); 
     U = U / norm(U);
     V_vec = cross(N_valid, U);
@@ -135,82 +138,158 @@ function [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectivePlane(V, 
     P3 = Pc - (W/2)*U - (H/2)*V_vec;
     P4 = Pc + (W/2)*U - (H/2)*V_vec;
     Corners_3D = [P1, P2, P3, P4];
+
+    projectionInput = Corners_3D;
+    projectionInput(3,:) = -projectionInput(3,:);
     
-    Corners_2D = K * Corners_3D;
+    Corners_2D = K * projectionInput;
     x_pts = Corners_2D(1, :) ./ Corners_2D(3, :);
     y_pts = Corners_2D(2, :) ./ Corners_2D(3, :);
 
     Mask = poly2mask(x_pts, y_pts, row, col);
 
-    Nx = zeros(row, col); Nx(Mask) = N_valid(1); Nx(~Mask) = NaN;
-    Ny = zeros(row, col); Ny(Mask) = N_valid(2); Ny(~Mask) = NaN;
-    Nz = zeros(row, col); Nz(Mask) = -abs(N_valid(3)); Nz(~Mask) = NaN;
-    N_desired = cat(3, Nx, Ny, Nz);
+    N_desired = NaN(row, col, 3);
+    for k = 1:3
+        component = NaN(row, col);
+        component(Mask) = N_valid(k);
+        N_desired(:,:,k) = component;
+    end
     [Phi_desired, Theta_desired] = getPhiTheta(N_desired, V, Mask);
 end
-function [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectiveHemisphere(V, row, col)
 
+function [Phi_desired, Theta_desired, N_desired, Mask] = ...
+    getPerspectiveHemisphere(V, row, col)
+
+    %% Reference image region for estimating sphere size
     [X_grid, Y_grid] = meshgrid(1:col, 1:row);
+
     center_x = col / 2;
     center_y = row / 2;
-    radius = min(row, col) / 2 - 20; 
-    Mask = ((X_grid - center_x).^2 + (Y_grid - center_y).^2) <= radius^2;
+    radius = min(row, col) / 2 - 20;
 
-    D = -V; 
-    Bw = bwperim(Mask);
-    Dx = D(:,:,1); 
-    Dy = D(:,:,2); 
+    Mask_ref = ((X_grid - center_x).^2 + ...
+                (Y_grid - center_y).^2) <= radius^2;
+
+    %% Unit rays from the camera toward the scene
+    % V must contain unit viewing directions across the image.
+    D = -V;
+    Dx = D(:,:,1);
+    Dy = D(:,:,2);
     Dz = D(:,:,3);
+
+    Bw = bwperim(Mask_ref);
     D_bnd = [Dx(Bw), Dy(Bw), Dz(Bw)];
-    
+
+    assert(~isempty(D_bnd) && all(isfinite(D_bnd(:))), ...
+        'V must be valid on the reference boundary.');
+
     Dc = mean(D_bnd, 1);
     Dc = Dc / norm(Dc);
-    
+
     dot_prods = D_bnd * Dc';
-    alpha = mean(acos(min(max(dot_prods, -1), 1))); 
-    
-    Zc_virtual = 1000; 
-    C = Zc_virtual * Dc;            
-    R = Zc_virtual * sin(alpha);   
-    
-    D_valid = [Dx(Mask), Dy(Mask), Dz(Mask)];
-    
-    b = -2 * (D_valid * C');
-    c = norm(C)^2 - R^2;
-    delta = b.^2 - 4*c;
-    
-    delta(delta < 0) = 0; 
-    
-    t = (-b - sqrt(delta)) / 2;
-    
-    P_valid = D_valid .* t;
-    
+    alpha = mean(acos(min(max(dot_prods, -1), 1)));
+
+    %% Sphere center and radius
+    centerDistance = 1000;
+    C = centerDistance * Dc;
+    R = centerDistance * sin(alpha);
+
+    %% Ray-sphere intersections over the entire image
+    D_all = [Dx(:), Dy(:), Dz(:)];
+
+    b = -2 * (D_all * C');
+    c = dot(C, C) - R^2;
+    discriminant = b.^2 - 4*c;
+
+    hit = all(isfinite(D_all), 2) & ...
+          isfinite(discriminant) & (discriminant >= 0);
+
+    t = NaN(row * col, 1);
+    t(hit) = (-b(hit) - sqrt(discriminant(hit))) / 2;
+
+    % Keep real intersections in front of the camera
+    hit = hit & (t > 0);
+    Mask = reshape(hit, row, col);
+
+    %% Outward normals at the visible intersections
+    P_valid = D_all(hit,:) .* t(hit);
+
     N_valid = (P_valid - C) / R;
-    N_valid = N_valid ./ vecnorm(N_valid, 2, 2); 
-    Nx = zeros(row, col); Ny = zeros(row, col); Nz = zeros(row, col);
-    Nx(Mask) = N_valid(:,1); 
-    Ny(Mask) = N_valid(:,2); 
-    Nz(Mask) = N_valid(:,3);
-    N_desired = cat(3, Nx, Ny, Nz);
-    
-    Vx = V(:,:,1);
-    Vy = V(:,:,2);
-    Vz = V(:,:,3);
-    V_valid = [Vx(Mask), Vy(Mask), Vz(Mask)];
-    
-    cos_theta = dot(N_valid, V_valid, 2);
-    cos_theta = max(min(cos_theta, 1), -1);
-    Theta_valid = acos(cos_theta);
-    
-    Lx = V_valid(:,3).*N_valid(:,1) - N_valid(:,3).*V_valid(:,1);
-    Ly = V_valid(:,3).*N_valid(:,2) - N_valid(:,3).*V_valid(:,2);
-    Phi_valid = atan2(Ly, Lx);
-    
-    Theta_desired = NaN(row, col);
-    Phi_desired = NaN(row, col);
-    Theta_desired(Mask) = Theta_valid;
-    Phi_desired(Mask) = Phi_valid;
+    N_valid = N_valid ./ vecnorm(N_valid, 2, 2);
+
+    N_all = NaN(row * col, 3);
+    N_all(hit,:) = N_valid;
+
+    N_desired = reshape(N_all, row, col, 3);
+
+    %% Perspective azimuth and zenith
+    [Phi_desired, Theta_desired] = ...
+        getPhiTheta(N_desired, V, Mask);
 end
+
+% function [Phi_desired, Theta_desired, N_desired, Mask] = getPerspectiveHemisphere(V, row, col)
+% 
+%     [X_grid, Y_grid] = meshgrid(1:col, 1:row);
+%     center_x = col / 2;
+%     center_y = row / 2;
+%     radius = min(row, col) / 2 - 20; 
+%     Mask = ((X_grid - center_x).^2 + (Y_grid - center_y).^2) <= radius^2;
+% 
+%     D = -V; 
+%     Bw = bwperim(Mask);
+%     Dx = D(:,:,1); 
+%     Dy = D(:,:,2); 
+%     Dz = D(:,:,3);
+%     D_bnd = [Dx(Bw), Dy(Bw), Dz(Bw)];
+%     
+%     Dc = mean(D_bnd, 1);
+%     Dc = Dc / norm(Dc);
+%     
+%     dot_prods = D_bnd * Dc';
+%     alpha = mean(acos(min(max(dot_prods, -1), 1))); 
+%     
+%     Zc_virtual = 1000; 
+%     C = Zc_virtual * Dc;            
+%     R = Zc_virtual * sin(alpha);   
+%     
+%     D_valid = [Dx(Mask), Dy(Mask), Dz(Mask)];
+%     
+%     b = -2 * (D_valid * C');
+%     c = norm(C)^2 - R^2;
+%     delta = b.^2 - 4*c;
+%     
+%     delta(delta < 0) = 0; 
+%     
+%     t = (-b - sqrt(delta)) / 2;
+%     
+%     P_valid = D_valid .* t;
+%     
+%     N_valid = (P_valid - C) / R;
+%     N_valid = N_valid ./ vecnorm(N_valid, 2, 2); 
+%     Nx = zeros(row, col); Ny = zeros(row, col); Nz = zeros(row, col);
+%     Nx(Mask) = N_valid(:,1); 
+%     Ny(Mask) = N_valid(:,2); 
+%     Nz(Mask) = N_valid(:,3);
+%     N_desired = cat(3, Nx, Ny, Nz);
+%     
+%     Vx = V(:,:,1);
+%     Vy = V(:,:,2);
+%     Vz = V(:,:,3);
+%     V_valid = [Vx(Mask), Vy(Mask), Vz(Mask)];
+%     
+%     cos_theta = dot(N_valid, V_valid, 2);
+%     cos_theta = max(min(cos_theta, 1), -1);
+%     Theta_valid = acos(cos_theta);
+%     
+%     Lx = V_valid(:,3).*N_valid(:,1) - N_valid(:,3).*V_valid(:,1);
+%     Ly = V_valid(:,3).*N_valid(:,2) - N_valid(:,3).*V_valid(:,2);
+%     Phi_valid = atan2(Ly, Lx);
+%     
+%     Theta_desired = NaN(row, col);
+%     Phi_desired = NaN(row, col);
+%     Theta_desired(Mask) = Theta_valid;
+%     Phi_desired(Mask) = Phi_valid;
+% end
 function [Phi_desired, Theta_desired, N_desired] = getPerspectiveRand(V, row, col, Mask)
     rng(1);
     sigma = 1.2; %1.2

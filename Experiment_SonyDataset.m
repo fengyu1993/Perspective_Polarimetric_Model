@@ -10,9 +10,10 @@ dataset = reatdSonyDataset('Data\SONY\');
 f = 12.5; pixelPitch = 2.5e-3; 
 effectivePitch = 2 * pixelPitch;
 fxy = f / effectivePitch;  
-K = [-fxy,  0,  cols/2; 0, -fxy, rows/2; 0,  0,  1];
-V_orth = zeros(rows, cols, 3); V_orth(:,:,3) = -1;
+K = [fxy,  0,  cols/2; 0, -fxy, rows/2; 0,  0,  1];
+V_orth = zeros(rows, cols, 3); V_orth(:,:,3) = 1;
 Beta_orth = zeros(rows, cols);
+Psi_orth = zeros(rows, cols);
 eta = 1.5;
 a = 1;
 %% calculate
@@ -20,6 +21,7 @@ err_plot_Ours = zeros(rows, cols);
 err_plot_Atkinson2006 = zeros(rows, cols);
 sumMask = zeros(rows, cols);
 nameList = dataset.nameList;
+nameList = nameList(6);
 for num = 1 : length(nameList)
     objName = char(nameList(num));
     objData = dataset.(objName);
@@ -35,15 +37,11 @@ for num = 1 : length(nameList)
         %% methods
         % ours
         N_Ours = getSurfaceNormalFromDiffuseReflection_AccurateNew(polarImage, Psi, Beta, V, eta, a, Mask);
-        N_Ours.dp1(:,:,1) = -N_Ours.dp1(:,:,1);   N_Ours.dp2(:,:,1) = -N_Ours.dp2(:,:,1);
-        N_Ours.dp1(:,:,3) = -N_Ours.dp1(:,:,3);   N_Ours.dp2(:,:,3) = -N_Ours.dp2(:,:,3);
         % Atkinson2006
-        N_Atkinson2006 = getSurfaceNormalFromDiffuseReflection_AccurateNew(polarImage, Psi, Beta_orth, V_orth, eta, a, Mask);
-        N_Atkinson2006.dp1(:,:,1) = -N_Atkinson2006.dp1(:,:,1);   N_Atkinson2006.dp2(:,:,1) = -N_Atkinson2006.dp2(:,:,1);
-        N_Atkinson2006.dp1(:,:,3) = -N_Atkinson2006.dp1(:,:,3);   N_Atkinson2006.dp2(:,:,3) = -N_Atkinson2006.dp2(:,:,3);
+        N_Atkinson2006 = getSurfaceNormalFromDiffuseReflection_AccurateNew(polarImage, Psi_orth, Beta_orth, V_orth, eta, a, Mask);
         %% Error
         error_Ours = getErrorNormalAngle(N_Ours, N_desired, Mask);
-        error_Atkinson2006 = getErrorNormalAngle(N_Atkinson2006, N_desired, Mask);
+        error_Atkinson2006 = getErrorNormalAngle(N_Atkinson2006, N_desired, Mask);       
         %% Statistics
         err_plot_Ours(Mask) = err_plot_Ours(Mask) + error_Ours(Mask);
         err_plot_Atkinson2006(Mask) = err_plot_Atkinson2006(Mask) + error_Atkinson2006(Mask);
@@ -64,8 +62,8 @@ fprintf('Sony dataset SD (deg) Ours/Atkinson2006: %.3f / %.3f\n', rad2deg(std(er
 fprintf('Sony dataset MED (deg) Ours/Atkinson2006: %.3f / %.3f\n', rad2deg(median(err_plot_Ours_mean(id))), rad2deg(median(err_plot_Atkinson2006_mean(id))));
 fprintf('Sony dataset Max (deg) Ours/Atkinson2006: %.3f / %.3f\n', rad2deg(max(err_plot_Ours_mean(id))), rad2deg(max(err_plot_Atkinson2006_mean(id))));
 %%
-save('./Data/Data_ExperimentSonyDataset.mat', 'id', 'sumMask',...
-    'err_plot_Ours_mean', 'err_plot_Atkinson2006_mean');
+% save('./Data/Data_ExperimentSonyDataset.mat', 'id', 'sumMask',...
+%     'err_plot_Ours_mean', 'err_plot_Atkinson2006_mean');
 
 
 
@@ -96,7 +94,10 @@ function dataset = reatdSonyDataset(location)
                 dataset.(objName)(k).polarImage.I135 = im2double(imread(fullfile(folderPath, 'A135.tif')));
                 dataset.(objName)(k).lightDirection = im2double(load(fullfile(folderPath, 'LightDirection.txt')));
                 dataset.(objName)(k).mask = im2double(imread(fullfile(folderPath, 'mask.png'))) > 0.99;
-                dataset.(objName)(k).normal = (im2double(imread(fullfile(folderPath, 'normal.png'))) * 2.0 - 1.0) .* dataset.(objName)(k).mask;
+                normal = (im2double(imread(fullfile(folderPath, 'normal.png'))) * 2.0 - 1.0) .* dataset.(objName)(k).mask;
+                normalLength = sqrt(sum(normal.^2, 3));
+                normalLength(normalLength == 0) = 1;  
+                dataset.(objName)(k).normal = normal ./ normalLength;                
 %                 figure('Position', [0, 0, 1400, 750], 'Color', 'w', 'Name', objName + "_" + subsubsubLocation(k)); 
 %                 subplot(3, 4, 1); imshow(dataset.(objName)(k).polarImage.I0, []);
 %                 subplot(3, 4, 2); imshow(dataset.(objName)(k).polarImage.I45, []);
@@ -108,7 +109,7 @@ function dataset = reatdSonyDataset(location)
 %                 subplot(3, 4, 8); imshow(dataset.(objName)(k).polarImage.I135 .* dataset.(objName)(k).mask, []);
 %                 subplot(3, 4, 9); imshow(dataset.(objName)(k).mask, []);
 %                 subplot(3, 4, 10); imshow((dataset.(objName)(k).normal + 1) / 2);
-%                 subplot(3, 4, 11); imshow(dataset.(objName)(k).normal .* dataset.(objName)(k).mask);   
+%                 subplot(3, 4, 11); imshow((dataset.(objName)(k).normal .* dataset.(objName)(k).mask + 1) / 2);   
             end
         end
     end
