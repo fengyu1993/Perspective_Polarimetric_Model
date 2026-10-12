@@ -3,8 +3,8 @@ clc;
 clear; 
 close all;
 %%
-dataset = reatdSonyDataset('Data\SONY\');
-% dataset = load('./Data/Data_SonyDataset.mat');
+% dataset = reatdSonyDataset('Data\SONY\');
+dataset = load('./Data/Data_SonyDataset.mat');
 %% parameters
 [rows, cols] = size(dataset.bear1(1).polarImage.I0);
 f = 12.5; pixelPitch = 2.5e-3; 
@@ -21,7 +21,7 @@ err_plot_Ours = zeros(rows, cols);
 err_plot_Atkinson2006 = zeros(rows, cols);
 sumMask = zeros(rows, cols);
 nameList = dataset.nameList;
-nameList = nameList(6);
+nameList = nameList(1);
 for num = 1 : length(nameList)
     objName = char(nameList(num));
     objData = dataset.(objName);

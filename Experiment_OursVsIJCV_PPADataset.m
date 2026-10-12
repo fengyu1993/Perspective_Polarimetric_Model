@@ -85,8 +85,8 @@ fprintf('PPA dataset SD (deg) ours/orthographic/IJCV: %.3f / %.3f / %.3f\n', rad
 fprintf('PPA dataset RMSE (deg) ours/orthographic/IJCV: %.3f / %.3f / %.3f\n', rad2deg(sqrt(mean(err_plot_ours_mean(id).^2))), rad2deg(sqrt(mean(err_plot_orth_mean(id).^2))), rad2deg(sqrt(mean(err_plot_IJCV_mean(id).^2))));
 fprintf('PPA dataset Max (deg) ours/orthographic/IJCV: %.3f / %.3f / %.3f\n', rad2deg(max(err_plot_ours_mean(id))), rad2deg(max(err_plot_orth_mean(id))), rad2deg(max(err_plot_IJCV_mean(id))));
 %% Save
-save('./Data/Data_ExperimentPlanePPADataset.mat', 'id',...
-    'err_plot_ours_mean', 'err_plot_orth_mean', 'err_plot_IJCV_mean');
+% save('./Data/Data_ExperimentPlanePPADataset.mat', 'id',...
+%     'err_plot_ours_mean', 'err_plot_orth_mean', 'err_plot_IJCV_mean');
 
 
 
