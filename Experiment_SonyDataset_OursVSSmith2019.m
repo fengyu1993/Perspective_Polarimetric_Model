@@ -9,14 +9,14 @@ eta = 1.5;
 %% parameters
 [rows, cols] = size(dataset.bear1(1).polarImage.I0);
 f = 12.5; pixelPitch = 2.5e-3; 
-effectivePitch = 2 * pixelPitch;
+effectivePitch = 1 * pixelPitch;
 fxy = f / effectivePitch;  
 K = [fxy,  0,  cols/2; 0, -fxy, rows/2; 0,  0,  1];
 %% prepare
 nameList = dataset.nameList; % "bear1"    "bear2"    "cat"    "cup1"    "cup3"    "doll"    "squirrel"
 for numName = 1 : length(nameList) 
     objName = char(nameList(numName));
-    objData = dataset.(objName); objData = objData(1:2);
+    objData = dataset.(objName); 
     Smith_SonyDataset = NaN(rows, cols, 3, length(objData));
     SmithPers_SonyDataset = NaN(rows, cols, 3, length(objData));
     Mask_SonyDataset = NaN(rows, cols, length(objData));
@@ -50,9 +50,9 @@ for numName = 1 : length(nameList)
         error_Smith_deg = rad2deg(error_Smith);
         error_SmithPers_deg = rad2deg(error_SmithPers);
         fprintf('Sony %s: %i Smith MAE old / pers: %.3f / %.3f deg\n', objName, i, mean(error_Smith_deg(Mask_valid)), mean(error_SmithPers_deg(Mask_valid)));
-        figure;
-        subplot(1, 2, 1); h = imagesc(error_Smith_deg); set(h, 'AlphaData', Mask_valid); set(gca, 'Color', 'k'); axis image off; colormap(parula); cb = colorbar; ylabel(cb, 'Angular error (deg)'); title('Smith');
-        subplot(1, 2, 2); h = imagesc(error_SmithPers_deg); set(h, 'AlphaData', Mask_valid); set(gca, 'Color', 'k'); axis image off; colormap(parula); cb = colorbar; ylabel(cb, 'Angular error (deg)'); title('SmithPers');
+%         figure;
+%         subplot(1, 2, 1); h = imagesc(error_Smith_deg); set(h, 'AlphaData', Mask_valid); set(gca, 'Color', 'k'); axis image off; colormap(parula); cb = colorbar; ylabel(cb, 'Angular error (deg)'); title('Smith');
+%         subplot(1, 2, 2); h = imagesc(error_SmithPers_deg); set(h, 'AlphaData', Mask_valid); set(gca, 'Color', 'k'); axis image off; colormap(parula); cb = colorbar; ylabel(cb, 'Angular error (deg)'); title('SmithPers');
     end
     %% statistics
     err_plot_Smith = zeros(rows, cols);
