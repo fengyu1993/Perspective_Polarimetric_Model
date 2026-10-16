@@ -1,9 +1,9 @@
 %% CVPR PNS Dataset: Polarimetric Normal Stereo (CVPR)
 clc; 
-clear; 
+% clear; 
 close all;
 %% dataset
-dataset = reatdPNSDataset('Data\PNS\');
+% dataset = reatdPNSDataset('Data\PNS\');
 % dataset = load("Data\Data_PNSDataset.mat");
 
 %% parameter
@@ -11,8 +11,8 @@ dataset = reatdPNSDataset('Data\PNS\');
 V_orth = zeros(rows, cols, 3); V_orth(:,:,3) = 1;
 Beta_orth = zeros(rows, cols);
 Psi_orth = zeros(rows, cols);
-eta = 1.5;
-a = 1;
+a_list = [0.65, 0.65, 0.65, 0.65, 0.65];
+eta_list = [1.52, 1.52, 1.52, 1.52, 1.52];
 % 所有图像共用的像素坐标
 [U, W] = meshgrid(1:cols, 1:rows);
 pixels = [U(:)'; W(:)'; ones(1, rows*cols)];
@@ -20,13 +20,17 @@ pixels = [U(:)'; W(:)'; ones(1, rows*cols)];
 err_plot_Ours = zeros(rows, cols); 
 err_plot_Atkinson2006 = zeros(rows, cols);
 sumMask = zeros(rows, cols);
-nameList = dataset.nameList;
+% nameList = dataset.nameList;
+nameList = dataset.nameList(1);
 imgNameList = dataset.imgNameList;
 for i = 1 : length(nameList)
+    a = a_list(i);
+    eta = eta_list(i);
     objName = char(nameList(i));
     firstImg = char(imgNameList(1));
     % V
     K = dataset.(objName).(firstImg).calib.K;
+    K(1:2,1:2) = 2*K(1:2,1:2);
     rays = K \ pixels;
     rays = rays ./ sqrt(sum(rays.^2, 1));
     rays(1,:) = -rays(1,:);
@@ -53,7 +57,12 @@ for i = 1 : length(nameList)
         N_Atkinson2006.dp2(:,:,2) = -N_Atkinson2006.dp2(:,:,2);   N_Atkinson2006.dp2(:,:,3) = -N_Atkinson2006.dp2(:,:,3);
         %% Error
         error_Ours = getErrorNormalAngle(N_Ours, N_desired, Mask);
-        error_Atkinson2006 = getErrorNormalAngle(N_Atkinson2006, N_desired, Mask);       
+        error_Atkinson2006 = getErrorNormalAngle(N_Atkinson2006, N_desired, Mask);           
+        
+        figure; 
+        subplot(1,2,1); imagesc(error_Ours); colormap(parula); colorbar;
+        subplot(1,2,2); imagesc(error_Atkinson2006); colormap(parula); colorbar;
+        [rs, cs] = find(error_Ours > pi/2);      
         %% Statistics
         err_plot_Ours(Mask) = err_plot_Ours(Mask) + error_Ours(Mask);
         err_plot_Atkinson2006(Mask) = err_plot_Atkinson2006(Mask) + error_Atkinson2006(Mask);

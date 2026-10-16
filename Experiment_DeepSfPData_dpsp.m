@@ -40,6 +40,7 @@ for caseNum = 1 : length(index.name)
                     fprintf('Processing Image Indoor: case = %s, a = %.3f, f  = %.3f, k =  %i/%i ...\n', caseName, a, f_xy, i, length(rangeIndoorNum));
                     %% Data 
                     [polarImage, Mask, N_desired] = readDeepSfPData(location.indoor, name.indoor{rangeIndoorNum(i)});
+                    figure; imshow(polarImage.I0, []);
                     V = getViewingDirection(K, Mask);  
                     Beta = getPerspectiveDistortionAngle(V, Mask);
                     N = get_Perspective_SurfaceNormal(polarImage, Beta, V, eta, a, Mask);
@@ -122,8 +123,8 @@ end
 fprintf('Whole set: \n \t pers / orth --- %.3f, %.3f\n', rad2deg(mean(Err_pers_all(Mask_id_all))), rad2deg(mean(Err_orth_all(Mask_id_all))));
 %%
 name = index.name;
-save('./Data/Data_ExperimentPlaneDeepSfPDataset.mat', 'name', 'Mask_id', 'Mask_id_all',...
-    'Err_pers', 'Err_orth', 'Err_pers_all', 'Err_orth_all');
+% save('./Data/Data_ExperimentPlaneDeepSfPDataset.mat', 'name', 'Mask_id', 'Mask_id_all',...
+%     'Err_pers', 'Err_orth', 'Err_pers_all', 'Err_orth_all');
 
 
 %%

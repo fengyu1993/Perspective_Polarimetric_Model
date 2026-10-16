@@ -35,20 +35,20 @@ for caseNum = 6 % : length(index.name)
         Beta = getPerspectiveDistortionAngle(V, Mask_);
         % Perspective 
         N = getSurfaceNormalFromSpecularReflection(polarImage, Beta, V, eta, a, Mask);
-        N.sp1 = -N.sp1;   N.sp2 = -N.sp2;
-        N.sp3 = -N.sp3;   N.sp4 = -N.sp4;
+%         N.sp1 = -N.sp1;   N.sp2 = -N.sp2;
+%         N.sp3 = -N.sp3;   N.sp4 = -N.sp4;
         % Orthographic 
         N_orth = getSurfaceNormalFromSpecularReflection(polarImage, Beta_orth, V_orth, eta, a, Mask);
-        N_orth.sp1 = -N_orth.sp1;   N_orth.sp2 = -N_orth.sp2;
-        N_orth.sp3 = -N_orth.sp3;   N_orth.sp4 = -N_orth.sp4;
+%         N_orth.sp1 = -N_orth.sp1;   N_orth.sp2 = -N_orth.sp2;
+%         N_orth.sp3 = -N_orth.sp3;   N_orth.sp4 = -N_orth.sp4;
         %% Error
         error_n = getErrorNormalAngle(N, N_desired, Mask);
         error_n_orth = getErrorNormalAngle(N_orth, N_desired, Mask);         
         %% Refine
         N = getRefinedSurfaceNormal(N, N_desired);
-        N(:,:,3) = -N(:,:,3);   
+%         N(:,:,3) = -N(:,:,3);   
         N_orth = getRefinedSurfaceNormal(N_orth, N_desired);
-        N_orth(:,:,3) = -N_orth(:,:,3); 
+%         N_orth(:,:,3) = -N_orth(:,:,3); 
 
         rad2deg(mean(error_n(Mask)))
         rad2deg(mean(error_n_orth(Mask)))

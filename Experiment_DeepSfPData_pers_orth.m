@@ -118,8 +118,8 @@ for objectNum = 1 : length(index.name)
     end
 end
 %%
-save('./Data/Data_ExperimentPlaneDeepSfPDataset_pers_orth.mat', 'index', ...
-    'Err_pers', 'Err_orth', 'Mask_sum', 'ID');
+% save('./Data/Data_ExperimentPlaneDeepSfPDataset_pers_orth.mat', 'index', ...
+%     'Err_pers', 'Err_orth', 'Mask_sum', 'ID');
 
 
 %%
