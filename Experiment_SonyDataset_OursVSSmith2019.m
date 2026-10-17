@@ -19,7 +19,7 @@ for numName = 1 : length(nameList)
     objData = dataset.(objName); 
     Smith_SonyDataset = NaN(rows, cols, 3, length(objData));
     SmithPers_SonyDataset = NaN(rows, cols, 3, length(objData));
-    Mask_SonyDataset = NaN(rows, cols, length(objData));
+    Mask_SonyDataset = ones(rows, cols);
     %% calculate
     Mask = ones(rows, cols);
     for i = 1 : length(objData)
@@ -42,7 +42,7 @@ for numName = 1 : length(nameList)
         % 共同评估区域
         gtLength = sqrt(sum(N_desired.^2, 3));
         Mask_valid = Mask & Mask_Smith & Mask_Pers & all(isfinite(N_desired), 3) & isfinite(gtLength) & gtLength > 0;
-        Mask_SonyDataset(:,:,i) = Mask_valid;
+        Mask_SonyDataset = Mask_SonyDataset & Mask_valid;
         %% Error
         error_Smith = getErrorNormalAngle(N_Smith, N_desired, Mask_valid);
         error_SmithPers = getErrorNormalAngle(N_SmithPers, N_desired, Mask_valid);  
@@ -58,10 +58,10 @@ for numName = 1 : length(nameList)
     err_plot_Smith = zeros(rows, cols);
     err_plot_SmithPers = zeros(rows, cols);
     sumMask = zeros(rows, cols);
+    Mask = logical(Mask_SonyDataset);
     for i = 1 : length(objData)
         N_Smith = Smith_SonyDataset(:,:,:,i);
         N_SmithPers = SmithPers_SonyDataset(:,:,:,i);
-        Mask = logical(Mask_SonyDataset(:,:,i));
         error_Smith = getErrorNormalAngle(N_Smith, N_desired, Mask);
         error_SmithPers = getErrorNormalAngle(N_SmithPers, N_desired, Mask);  
         err_plot_Smith(Mask) = err_plot_Smith(Mask) + error_Smith(Mask);
@@ -82,7 +82,9 @@ for numName = 1 : length(nameList)
     fprintf('Sony dataset Max (deg) Smith / SmithPers: %.3f / %.3f\n', rad2deg(max(err_plot_Smith_mean(id))), rad2deg(max(err_plot_SmithPers_mean(id))));
     %% save
     nameSave = ['./Data/Data_ExperimentSonyDataset_OursVsSmith_', objName, '.mat'];
-    save(nameSave,'Smith_SonyDataset', 'SmithPers_SonyDataset', 'Mask_SonyDataset');
+    OtherN_est = Smith_SonyDataset;
+    OursN_est = SmithPers_SonyDataset;
+    save(nameSave,'OtherN_est', 'OursN_est', 'Mask_SonyDataset', 'N_desired');
 end
 
 

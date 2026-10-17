@@ -22,7 +22,7 @@ for numName = 1 : length(nameList)
     objData = dataset.(objName); 
     Atkinson_SonyDataset = NaN(rows, cols, 3, length(objData));
     AtkinsonPers_SonyDataset = NaN(rows, cols, 3, length(objData));
-    Mask_SonyDataset = NaN(rows, cols, length(objData));
+    Mask_SonyDataset = ones(rows, cols);
     %% calculate
     Mask = ones(rows, cols);
     for i = 1 : length(objData)
@@ -46,7 +46,7 @@ for numName = 1 : length(nameList)
         % 共同评估区域
         gtLength = sqrt(sum(N_desired.^2, 3));
         Mask_valid = Mask & all(isfinite(N_desired), 3) & isfinite(gtLength) & gtLength > 0;
-        Mask_SonyDataset(:,:,i) = Mask_valid;
+        Mask_SonyDataset = Mask_SonyDataset & Mask_valid;
         %% Error
         error_Atkinson = getErrorNormalAngle(N_Atkinson, N_desired, Mask_valid);
         error_AtkinsonPers = getErrorNormalAngle(N_AtkinsonPers, N_desired, Mask_valid);  
@@ -62,10 +62,10 @@ for numName = 1 : length(nameList)
     err_plot_Atkinson = zeros(rows, cols);
     err_plot_AtkinsonPers = zeros(rows, cols);
     sumMask = zeros(rows, cols);
+    Mask = logical(Mask_SonyDataset);
     for i = 1 : length(objData)
         N_Atkinson = Atkinson_SonyDataset(:,:,:,i);
         N_AtkinsonPers = AtkinsonPers_SonyDataset(:,:,:,i);
-        Mask = logical(Mask_SonyDataset(:,:,i));
         error_Atkinson = getErrorNormalAngle(N_Atkinson, N_desired, Mask);
         error_AtkinsonPers = getErrorNormalAngle(N_AtkinsonPers, N_desired, Mask);  
         err_plot_Atkinson(Mask) = err_plot_Atkinson(Mask) + error_Atkinson(Mask);
@@ -86,7 +86,9 @@ for numName = 1 : length(nameList)
 %     fprintf('Sony dataset Max (deg) Atkinson / AtkinsonPers: %.3f / %.3f\n', rad2deg(max(err_plot_Atkinson_mean(id))), rad2deg(max(err_plot_AtkinsonPers_mean(id))));
     %% save
     nameSave = ['./Data/Data_ExperimentSonyDataset_OursVsAtkinson_', objName, '.mat'];
-    save(nameSave,'Atkinson_SonyDataset', 'AtkinsonPers_SonyDataset', 'Mask_SonyDataset');
+    OtherN_est = Atkinson_SonyDataset;
+    OursN_est = AtkinsonPers_SonyDataset;
+    save(nameSave,'OtherN_est', 'OursN_est', 'Mask_SonyDataset', 'N_desired');
 end
 
 
