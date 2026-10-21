@@ -1470,3 +1470,56 @@ ii=repmat((1:m).',1,5);
 vv=repmat([-4,1,1,1,1],m,1);
 L=sparse(ii(:),jj(:),vv(:),m,n);
 end
+
+function dataset = reatdSonyDataset(location)
+    subLocation = ["SONY1", "SONY2", "SONY3"];
+    subsubLocation = {
+        ["bear1", "bear2", "cat"];  
+        ["cup1", "cup3"];            
+        ["doll",  "squirrel"]         
+    };
+    subsubsubLocation = ["1", "2", "3", "4", "5", "6", "7", "8"];
+    dataset = struct(); 
+    % data
+    for i = 1 : length(subLocation)
+        current_objects = subsubLocation{i}; 
+        for j = 1 : length(current_objects)
+            objName = char(current_objects(j));
+            for k = 1 : length(subsubsubLocation)
+                folderPath = fullfile(location, subLocation(i), objName, subsubsubLocation(k));
+                dataset.(objName)(k).polarImage.I0 = im2double(imread(fullfile(folderPath, 'A000.tif')));
+                dataset.(objName)(k).polarImage.I45 = im2double(imread(fullfile(folderPath, 'A045.tif')));
+                dataset.(objName)(k).polarImage.I90 = im2double(imread(fullfile(folderPath, 'A090.tif')));
+                dataset.(objName)(k).polarImage.I135 = im2double(imread(fullfile(folderPath, 'A135.tif')));
+                dataset.(objName)(k).lightDirection = im2double(load(fullfile(folderPath, 'LightDirection.txt')));
+                dataset.(objName)(k).mask = im2double(imread(fullfile(folderPath, 'mask.png'))) > 0.99;
+                normal = (im2double(imread(fullfile(folderPath, 'normal.png'))) * 2.0 - 1.0) .* dataset.(objName)(k).mask;
+                normalLength = sqrt(sum(normal.^2, 3));
+                normalLength(normalLength == 0) = 1;  
+                dataset.(objName)(k).normal = normal ./ normalLength;                
+%                 figure('Position', [0, 0, 1400, 750], 'Color', 'w', 'Name', objName + "_" + subsubsubLocation(k)); 
+%                 subplot(3, 4, 1); imshow(dataset.(objName)(k).polarImage.I0, []);
+%                 subplot(3, 4, 2); imshow(dataset.(objName)(k).polarImage.I45, []);
+%                 subplot(3, 4, 3); imshow(dataset.(objName)(k).polarImage.I90, []);
+%                 subplot(3, 4, 4); imshow(dataset.(objName)(k).polarImage.I135, []);
+%                 subplot(3, 4, 5); imshow(dataset.(objName)(k).polarImage.I0 .* dataset.(objName)(k).mask, []);
+%                 subplot(3, 4, 6); imshow(dataset.(objName)(k).polarImage.I45 .* dataset.(objName)(k).mask, []);
+%                 subplot(3, 4, 7); imshow(dataset.(objName)(k).polarImage.I90 .* dataset.(objName)(k).mask, []);
+%                 subplot(3, 4, 8); imshow(dataset.(objName)(k).polarImage.I135 .* dataset.(objName)(k).mask, []);
+%                 subplot(3, 4, 9); imshow(dataset.(objName)(k).mask, []);
+%                 subplot(3, 4, 10); imshow((dataset.(objName)(k).normal + 1) / 2);
+%                 subplot(3, 4, 11); imshow((dataset.(objName)(k).normal .* dataset.(objName)(k).mask + 1) / 2);   
+            end
+            Mask =  dataset.(objName)(1).mask & dataset.(objName)(2).mask & dataset.(objName)(3).mask & dataset.(objName)(4).mask ...
+                      & dataset.(objName)(5).mask & dataset.(objName)(6).mask & dataset.(objName)(7).mask & dataset.(objName)(8).mask;
+            dataset.(objName)(1).mask = Mask; dataset.(objName)(2).mask = Mask; 
+            dataset.(objName)(3).mask = Mask; dataset.(objName)(4).mask = Mask; 
+            dataset.(objName)(5).mask = Mask; dataset.(objName)(6).mask = Mask; 
+            dataset.(objName)(7).mask = Mask; dataset.(objName)(8).mask = Mask; 
+
+        end
+    end
+    %% name
+    dataset.nameList = ["bear1", "bear2", "cat", "cup1", "cup3", "doll", "squirrel"];
+    save('./Data/Data_SonyDataset.mat', '-struct', 'dataset');
+end

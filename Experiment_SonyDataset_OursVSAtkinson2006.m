@@ -93,10 +93,6 @@ end
 
 
 
-
-
-
-%%
 function dataset = reatdSonyDataset(location)
     subLocation = ["SONY1", "SONY2", "SONY3"];
     subsubLocation = {
@@ -136,6 +132,13 @@ function dataset = reatdSonyDataset(location)
 %                 subplot(3, 4, 10); imshow((dataset.(objName)(k).normal + 1) / 2);
 %                 subplot(3, 4, 11); imshow((dataset.(objName)(k).normal .* dataset.(objName)(k).mask + 1) / 2);   
             end
+            Mask =  dataset.(objName)(1).mask & dataset.(objName)(2).mask & dataset.(objName)(3).mask & dataset.(objName)(4).mask ...
+                      & dataset.(objName)(5).mask & dataset.(objName)(6).mask & dataset.(objName)(7).mask & dataset.(objName)(8).mask;
+            dataset.(objName)(1).mask = Mask; dataset.(objName)(2).mask = Mask; 
+            dataset.(objName)(3).mask = Mask; dataset.(objName)(4).mask = Mask; 
+            dataset.(objName)(5).mask = Mask; dataset.(objName)(6).mask = Mask; 
+            dataset.(objName)(7).mask = Mask; dataset.(objName)(8).mask = Mask; 
+
         end
     end
     %% name
