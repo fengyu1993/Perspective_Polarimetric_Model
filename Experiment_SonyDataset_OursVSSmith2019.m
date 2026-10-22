@@ -30,7 +30,12 @@ for numName = 1 : length(nameList)
     Psi = getPsiAngle(V, Mask);
     for i = 1 : length(objData)
         %% parameters
-        polarImage = objData(i).polarImage;   
+        polarImage = objData(i).polarImage;  
+        E = double(objData(i).intensity);
+        fields = {'I0', 'I45', 'I90', 'I135'};
+        for k = 1:4
+            polarImage.(fields{k}) = polarImage.(fields{k}) ./ E;
+        end
         N_desired = objData(i).normal;
         lightDirection = objData(i).lightDirection;
         %% methods

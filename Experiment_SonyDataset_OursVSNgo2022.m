@@ -1,10 +1,10 @@
 %% Sony Dataset: Surface Normals and Light Directions from Shading and Polarization
 clc; 
-% clear; 
+clear; 
 close all;
 %%
-% dataset = reatdSonyDataset('Data\SONY\');
-% dataset = load('./Data/Data_SonyDataset.mat');
+% dataset = readSonyDataset('Data\SONY\');
+dataset = load('./Data/Data_SonyDataset.mat');
 eta = 1.5;
 %% parameters
 [rows, cols] = size(dataset.bear1(1).polarImage.I0);
@@ -14,56 +14,36 @@ fxy = f / effectivePitch;
 K = [fxy,  0,  cols/2; 0, -fxy, rows/2; 0,  0,  1];
 %% 
 nameList = dataset.nameList; % "bear1"    "bear2"    "cat"    "cup1"    "cup3"    "doll"    "squirrel"
+N_Ngo2022_SonyDataset = NaN(rows, cols, 3, length(nameList));
+N_Ngo2022Pers_SonyDataset = NaN(rows, cols, 3, length(nameList));
+N_Desired_SonyDataset = NaN(rows, cols, 3, length(nameList));
+Mask_SonyDataset = NaN(rows, cols, length(nameList));
 for numName = 1 : length(nameList)
     objData = dataset.(nameList(numName)); 
-    [N_Ngo2022, eta_est] = getNormalNgo2022(objData);
-
-end
-
-
-
-
-
-
-
-%% single pixel 
-Mask = ones(size(objData(1).polarImage.I0)) == 1;
-for num = 1 : length(objData)
-    Mask = objData(num).mask & Mask;
-end
-[rowValid, colValid] = find(Mask == 1);
-error = NaN(size(Mask));
-for cnt = 1 : length(rowValid)
-    row = rowValid(cnt); col = colValid(cnt);
-%     row = 578; col = 414;
-    polarPixel.I0 = []; polarPixel.I45 = []; polarPixel.I90 = []; polarPixel.I135 = [];
-    numLights = numel(objData);
-    lightDirection = zeros(numLights, 3);
-    for num = 1 : length(objData)
-        polarPixel.I0 = [polarPixel.I0; objData(num).polarImage.I0(row, col)];
-        polarPixel.I45 = [polarPixel.I45; objData(num).polarImage.I45(row, col)];
-        polarPixel.I90 = [polarPixel.I90; objData(num).polarImage.I90(row, col)];
-        polarPixel.I135 = [polarPixel.I135; objData(num).polarImage.I135(row, col)];
-        lightDirection(num,:) = objData(num).lightDirection(:).';
-    end
-    lightDirection = lightDirection ./ vecnorm(lightDirection, 2,2);
+%     [N_Ngo2022, ~] = getNormalNgo2022(objData);
+    [N_Ngo2022Pers, ~] = getNormalNgo2022_Pers(objData, K);
+    N_desired = objData(1).normal;
+    Mask = objData(1).mask;
     %%
-    n_Desired = reshape(objData(1).normal(row,col,:), 3, 1);
-    [n_Ngo2022, eta_est, info] = get_normal_Ngo2022_pixel(polarPixel, lightDirection);
-
-
-
-
-    
-    error(row, col) = rad2deg(acos(n_Ngo2022' * n_Desired));
-    rad2deg(acos(n_Ngo2022' * n_Desired))
+    error_Ngo2022 = getErrorNormalAngle(N_Ngo2022, N_desired, Mask);  
+    error_Ngo2022Pers = getErrorNormalAngle(N_Ngo2022Pers, N_desired, Mask);  
+    %%
+    N_Ngo2022_SonyDataset(:,:,:, numName) = N_Ngo2022;
+    N_Ngo2022Pers_SonyDataset(:,:,:, numName) = N_Ngo2022Pers;
+    N_Desired_SonyDataset(:,:,:, numName) = N_desired;
+    Mask_SonyDataset(:,:,numName) = Mask;
+    fprintf('Sony dataset %s-Ngo2022: MAE (deg) orth. / pers.: %.3f, %.3f\n', nameList(numName), rad2deg(mean(error_Ngo2022(Mask))), rad2deg(mean(error_Ngo2022Pers(Mask))) );
+    fprintf('Sony dataset %s-Ngo2022: SD (deg) orth. / pers.: %.3f, %.3f\n', nameList(numName), rad2deg(std(error_Ngo2022(Mask))), rad2deg(std(error_Ngo2022Pers(Mask))) );
+    fprintf('Sony dataset %s-Ngo2022: MED (deg) orth. / pers.: %.3f, %.3f\n', nameList(numName), rad2deg(median(error_Ngo2022(Mask))), rad2deg(median(error_Ngo2022Pers(Mask))) );
+    fprintf('Sony dataset %s-Ngo2022: Max (deg) orth. / pers.: %.3f, %.3f\n', nameList(numName), rad2deg(max(error_Ngo2022(Mask))), rad2deg(max(error_Ngo2022Pers(Mask))) );
 end
-mean(error(Mask))
+%%
+nameSave = ['./Data/Data_ExperimentSonyDataset_OursVsNgo', '.mat'];
+save(nameSave,'N_Ngo2022_SonyDataset', 'N_Ngo2022Pers_SonyDataset', 'N_Desired_SonyDataset', 'Mask_SonyDataset', 'nameList');
 
 
-
-
-function dataset = reatdSonyDataset(location)
+%%
+function dataset = readSonyDataset(location)
     subLocation = ["SONY1", "SONY2", "SONY3"];
     subsubLocation = {
         ["bear1", "bear2", "cat"];  
@@ -88,7 +68,8 @@ function dataset = reatdSonyDataset(location)
                 normal = (im2double(imread(fullfile(folderPath, 'normal.png'))) * 2.0 - 1.0) .* dataset.(objName)(k).mask;
                 normalLength = sqrt(sum(normal.^2, 3));
                 normalLength(normalLength == 0) = 1;  
-                dataset.(objName)(k).normal = normal ./ normalLength;                
+                dataset.(objName)(k).normal = normal ./ normalLength;   
+                dataset.(objName)(k).intensity = double(load(fullfile(folderPath, 'Intensity.txt')));
 %                 figure('Position', [0, 0, 1400, 750], 'Color', 'w', 'Name', objName + "_" + subsubsubLocation(k)); 
 %                 subplot(3, 4, 1); imshow(dataset.(objName)(k).polarImage.I0, []);
 %                 subplot(3, 4, 2); imshow(dataset.(objName)(k).polarImage.I45, []);
