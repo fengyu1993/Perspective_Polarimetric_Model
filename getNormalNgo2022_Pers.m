@@ -1,4 +1,4 @@
-function [N_Ngo, eta_Ngo] = getNormalNgo2022_Pers(objData, K)
+function [N_Ngo, eta_Ngo] = getNormalNgo2022_Pers(objData, K, cfg)
     Mask = objData(1).mask;
     [rows, cols] = size(Mask);
     pages = length(objData);
@@ -11,8 +11,14 @@ function [N_Ngo, eta_Ngo] = getNormalNgo2022_Pers(objData, K)
     V_list = reshape(V, [], 3);
     V_list = V_list(pixelList, :);
     %% Initialization
-    [N_init, eta_init, cfg] = getInit(iList, lList);
-    xInit = [acos(max(-1, min(1, N_init(:,3)))), atan2(N_init(:,2), N_init(:,1)), eta_init];
+    [N_init, eta_init] = getInit(iList, lList);
+    cosTheta0 = sum(N_init .* V_list, 2);
+    theta0 = acos(max(-1, min(1, cosTheta0)));
+    dx = V_list(:,3).*N_init(:,1) - N_init(:,3).*V_list(:,1);
+    dy = V_list(:,3).*N_init(:,2) - N_init(:,3).*V_list(:,2);  
+    phi0 = atan2(dy, dx);
+    phi0(hypot(dx, dy) < 1e-12) = 0;
+    xInit = [theta0, phi0, eta_init];
     %% Allocate outputs
     N_list = NaN(numPixels, 3);
     eta_list = NaN(numPixels, 1);
@@ -28,8 +34,8 @@ function [N_Ngo, eta_Ngo] = getNormalNgo2022_Pers(objData, K)
         % 非线性优化
         xOpt = optimizePixel(residualFun, x0);
         % 将优化后的角度转换为单位法向量
-        theta = xOpt(1); phi   = xOpt(2);
-%         N_list(num,:) = [sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta)];
+        nOpt = normalFromAnglesPers(xOpt(1), xOpt(2), c.o);
+        N_list(num,:) = nOpt.';
         eta_list(num) = xOpt(3);
     end
     %% Restore image-shaped outputs
@@ -56,6 +62,21 @@ function c = preparePixelData(I, L, cfg, v)
     c.anglePairs = nchoosek(1:4, 2);
 end
 
+function n = normalFromAnglesPers(theta, phi, v)
+    v = v(:) / norm(v);
+
+    % 入射面与成像平面交线的方向
+    d = [cos(phi); sin(phi); 0];
+
+    % 垂直于视线的偏振基
+    e_perp = cross(v, d);
+    e_perp = e_perp / norm(e_perp);
+    e_parallel = cross(e_perp, v);
+
+    % 透视法向量参数化
+    n = v*cos(theta) + e_parallel*sin(theta);
+end
+
 function r = getTotalResidual(x, c, cfg)
 
     % 光度立体约束
@@ -78,7 +99,7 @@ function r_s = getShadingResidual(x, c)
     normS1 = hypot(I1, I2);
     %%
     theta = x(1); phi = x(2); eta = x(3);
-    n = [sin(theta)*cos(phi); sin(theta)*sin(phi); cos(theta)];
+    n = normalFromAnglesPers(theta, phi, c.o);
     lightIds = unique([li; lj]);
     %%
     cosThetaI = c.L(lightIds,:) * n;
@@ -99,31 +120,43 @@ function r_s = getShadingResidual(x, c)
     cosAngle = max(-1, min(1, cosAngle));
     r_s = acos(cosAngle(:));
 end
-% 
-% function r_p = getPolarizationResidual(x, c)
-%     ai = c.anglePairs(:,1);     aj = c.anglePairs(:,2);
-%     I1 = c.I(c.lightIds, ai);   I2 = c.I(c.lightIds, aj);
-%     normP1 = hypot(I1, I2);
-%     %%
-%     theta = x(1); phi = x(2); eta = x(3);
-%     sin2Theta = sin(theta)^2;
-%     numerator = (eta - 1/eta)^2 * sin2Theta;
-%     denominator = 2 + 2*eta^2 - (eta + 1/eta)^2 * sin2Theta + 4*cos(theta)*sqrt(eta^2 - sin2Theta);
-%     rho = numerator / denominator;
-%     %%
-%     p = 1 + rho*cos(2*c.angles - 2*phi);
-%     p1 = p(ai).'; p2 = p(aj).';
-%     normP2 = hypot(p1, p2);
-%     %%
-%     cosAngle = (I1.*p1 + I2.*p2) ./ (normP1.*normP2);
-%     cosAngle = max(-1, min(1, cosAngle));
-%     r_p = acos(cosAngle(:));
-% end
+
+function r_p = getPolarizationResidual(x, c)
+    ai = c.anglePairs(:,1);     aj = c.anglePairs(:,2);
+    I1 = c.I(c.lightIds, ai);   I2 = c.I(c.lightIds, aj);
+    normP1 = hypot(I1, I2);
+    %%
+    theta = x(1); phi = x(2); eta = x(3);
+    sin2Theta = sin(theta)^2;
+    numerator = (eta - 1/eta)^2 * sin2Theta;
+    denominator = 2 + 2*eta^2 - (eta + 1/eta)^2 * sin2Theta + 4*cos(theta)*sqrt(eta^2 - sin2Theta);
+    rho = numerator / denominator;
+    %%
+    v = c.o(:) / norm(c.o);
+    cosBeta = v(3);
+    sin2Beta = max(0, 1 - cosBeta^2);
+    psi = atan2(v(2), v(1));
+    delta   = phi - psi;
+    epsilon = c.angles(:) - psi;
+    Lgeom = sqrt(cosBeta^2 + sin2Beta*sin(delta)^2);
+    cosGamma = cosBeta*cos(delta) / Lgeom;
+    sinGamma = sin(delta) / Lgeom;
+    q = cos(epsilon).^2 + cosBeta^2*sin(epsilon).^2;
+    A = cosGamma*cos(epsilon) + cosBeta*sinGamma*sin(epsilon);
+    B = sinGamma*cos(epsilon) - cosBeta*cosGamma*sin(epsilon);
+    p = ((1 + rho)*A.^2 + (1 - rho)*B.^2) ./ q;
+    %%
+    p1 = p(ai).'; p2 = p(aj).';
+    normP2 = hypot(p1, p2);
+    %%
+    cosAngle = (I1.*p1 + I2.*p2) ./ (normP1.*normP2);
+    cosAngle = max(-1, min(1, cosAngle));
+    r_p = acos(cosAngle(:));
+end
 
 function r_c = getConstraintResidual(x, c, kn)
-    theta = x(1);   phi = x(2);
-    n = [sin(theta)*cos(phi); sin(theta)*sin(phi); cos(theta)];
-    cosView = n.' * c.o(:); cosView = max(-1, min(1, cosView));
+    theta = x(1);
+    cosView = cos(theta);
     g = (1 - cosView) / (1 + exp(kn*cosView));
     r_c = sqrt(g);
 end
@@ -131,6 +164,8 @@ end
 function [xOpt, info] = optimizePixel(residualFun, x0)
     x0 = x0(:);
     %% Solver options
+    lb = [-Inf; -Inf; 1];
+    ub = [ Inf;  Inf; 3];
     options = optimoptions('lsqnonlin', ...
             'Display', 'off', ...
             'MaxIterations', 200, ...
@@ -140,7 +175,8 @@ function [xOpt, info] = optimizePixel(residualFun, x0)
             'FiniteDifferenceType', 'forward');
     options.Algorithm = 'levenberg-marquardt';
     %% Unconstrained L-M optimization
-    [xOpt, resnorm, residual, exitflag, output] = lsqnonlin(residualFun, x0, [], [], options);
+%     [xOpt, resnorm, residual, exitflag, output] = lsqnonlin(residualFun, x0, [], [], options);
+    [xOpt, resnorm, residual, exitflag, output] = lsqnonlin(residualFun, x0, lb, ub, options);
     info.resnorm  = resnorm;       % 最终残差平方和
     info.residual = residual;      % 最终残差向量
     info.exitflag = exitflag;      % 停止原因
@@ -162,9 +198,7 @@ function [iList, lList] = getData(objData, rowList, colList, pages)
     end
 end
 
-function [N, eta, cfg] = getInit(iList, lList)
-    cfg.ws = 0.5; cfg.kn = 100; cfg.lambda = 1;  cfg.darkThreshold = 0.01;
-%     cfg.rows = 
+function [N, eta] = getInit(iList, lList)
     N = NaN(size(iList, 3), 3);
     eta = NaN(size(iList, 3), 1);
     LInv = pinv(lList);

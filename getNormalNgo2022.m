@@ -1,4 +1,4 @@
-function [N_Ngo, eta_Ngo] = getNormalNgo2022(objData)
+function [N_Ngo, eta_Ngo] = getNormalNgo2022(objData, cfg)
     Mask = objData(1).mask;
     [rows, cols] = size(Mask);
     pages = length(objData);
@@ -8,7 +8,7 @@ function [N_Ngo, eta_Ngo] = getNormalNgo2022(objData)
     %% Prepare data
     [iList, lList] = getData(objData, rowList, colList, pages);
     %% Initialization
-    [N_init, eta_init, cfg] = getInit(iList, lList);
+    [N_init, eta_init] = getInit(iList, lList);
     xInit = [acos(max(-1, min(1, N_init(:,3)))), atan2(N_init(:,2), N_init(:,1)), eta_init];
     %% Allocate outputs
     N_list = NaN(numPixels, 3);
@@ -127,6 +127,8 @@ end
 function [xOpt, info] = optimizePixel(residualFun, x0)
     x0 = x0(:);
     %% Solver options
+    lb = [-Inf; -Inf; 1];
+    ub = [ Inf;  Inf; 3];
     options = optimoptions('lsqnonlin', ...
             'Display', 'off', ...
             'MaxIterations', 200, ...
@@ -136,7 +138,8 @@ function [xOpt, info] = optimizePixel(residualFun, x0)
             'FiniteDifferenceType', 'forward');
     options.Algorithm = 'levenberg-marquardt';
     %% Unconstrained L-M optimization
-    [xOpt, resnorm, residual, exitflag, output] = lsqnonlin(residualFun, x0, [], [], options);
+%     [xOpt, resnorm, residual, exitflag, output] = lsqnonlin(residualFun, x0, [], [], options);
+    [xOpt, resnorm, residual, exitflag, output] = lsqnonlin(residualFun, x0, lb, ub, options);
     info.resnorm  = resnorm;       % 最终残差平方和
     info.residual = residual;      % 最终残差向量
     info.exitflag = exitflag;      % 停止原因
@@ -158,8 +161,7 @@ function [iList, lList] = getData(objData, rowList, colList, pages)
     end
 end
 
-function [N, eta, cfg] = getInit(iList, lList)
-    cfg.ws = 0.5; cfg.kn = 100; cfg.lambda = 1;  cfg.darkThreshold = 0.01;
+function [N, eta] = getInit(iList, lList)
     N = NaN(size(iList, 3), 3);
     eta = NaN(size(iList, 3), 1);
     LInv = pinv(lList);

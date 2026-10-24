@@ -5,13 +5,16 @@ close all;
 %%
 % dataset = readSonyDataset('Data\SONY\');
 dataset = load('./Data/Data_SonyDataset.mat');
-eta = 1.5;
 %% parameters
 [rows, cols] = size(dataset.bear1(1).polarImage.I0);
 f = 12.5; pixelPitch = 2.5e-3; 
 effectivePitch = 1 * pixelPitch;
 fxy = f / effectivePitch;  
 K = [fxy,  0,  cols/2; 0, -fxy, rows/2; 0,  0,  1];
+cfg.ws = 0.5; 
+cfg.kn = 100; 
+cfg.lambda = 1;  
+cfg.darkThreshold = 0.005;
 %% 
 nameList = dataset.nameList; % "bear1"    "bear2"    "cat"    "cup1"    "cup3"    "doll"    "squirrel"
 N_Ngo2022_SonyDataset = NaN(rows, cols, 3, length(nameList));
@@ -20,8 +23,9 @@ N_Desired_SonyDataset = NaN(rows, cols, 3, length(nameList));
 Mask_SonyDataset = NaN(rows, cols, length(nameList));
 for numName = 1 : length(nameList)
     objData = dataset.(nameList(numName)); 
-%     [N_Ngo2022, ~] = getNormalNgo2022(objData);
-    [N_Ngo2022Pers, ~] = getNormalNgo2022_Pers(objData, K);
+    [N_Ngo2022, eta_Ngo2022] = getNormalNgo2022(objData, cfg);
+    [N_Ngo2022Pers, eta_Ngo2022Pers] = getNormalNgo2022_Pers(objData, K, cfg);
+%     N_Ngo2022 = N_Ngo2022Pers;
     N_desired = objData(1).normal;
     Mask = objData(1).mask;
     %%
@@ -33,9 +37,9 @@ for numName = 1 : length(nameList)
     N_Desired_SonyDataset(:,:,:, numName) = N_desired;
     Mask_SonyDataset(:,:,numName) = Mask;
     fprintf('Sony dataset %s-Ngo2022: MAE (deg) orth. / pers.: %.3f, %.3f\n', nameList(numName), rad2deg(mean(error_Ngo2022(Mask))), rad2deg(mean(error_Ngo2022Pers(Mask))) );
-    fprintf('Sony dataset %s-Ngo2022: SD (deg) orth. / pers.: %.3f, %.3f\n', nameList(numName), rad2deg(std(error_Ngo2022(Mask))), rad2deg(std(error_Ngo2022Pers(Mask))) );
+%     fprintf('Sony dataset %s-Ngo2022: SD (deg) orth. / pers.: %.3f, %.3f\n', nameList(numName), rad2deg(std(error_Ngo2022(Mask))), rad2deg(std(error_Ngo2022Pers(Mask))) );
     fprintf('Sony dataset %s-Ngo2022: MED (deg) orth. / pers.: %.3f, %.3f\n', nameList(numName), rad2deg(median(error_Ngo2022(Mask))), rad2deg(median(error_Ngo2022Pers(Mask))) );
-    fprintf('Sony dataset %s-Ngo2022: Max (deg) orth. / pers.: %.3f, %.3f\n', nameList(numName), rad2deg(max(error_Ngo2022(Mask))), rad2deg(max(error_Ngo2022Pers(Mask))) );
+%     fprintf('Sony dataset %s-Ngo2022: Max (deg) orth. / pers.: %.3f, %.3f\n', nameList(numName), rad2deg(max(error_Ngo2022(Mask))), rad2deg(max(error_Ngo2022Pers(Mask))) );
 end
 %%
 nameSave = ['./Data/Data_ExperimentSonyDataset_OursVsNgo', '.mat'];
