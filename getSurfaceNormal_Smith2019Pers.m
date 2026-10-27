@@ -3,8 +3,14 @@ function [N_SmithPers, Mask_eval, info] = ...
 %GETSURFACENORMAL_SMITH2019PERS Perspective adaptation, DIFFUSE setting.
 % Coordinates: x right, y up, z toward camera; V is surface-to-camera.
 % Psi=atan2(Vy,Vx), Beta=acos(Vz), in radians, at the input image resolution.
-% Uses an undistorted pinhole camera. Its normalized pixel map is recovered
-% from Psi/Beta, so the requested six-input interface does not require K.
+% Supports a calibrated CENTRAL camera ray field, including lens distortion.
+% Psi/Beta must refer to the original image pixel grid and the same camera
+% frame used by the polarization model. No image undistortion is performed.
+% The six-input interface does not require K: x=-Vx/Vz, y=-Vy/Vz.
+% A spatially varying inverse-transpose Jacobian transforms pixel derivatives
+% into normalized-coordinate derivatives. A common optical center and Vz>0
+% are required. This does not model lens-induced polarization changes.
+% Save as getSurfaceNormal_Smith2019Pers.m (replace the earlier local copy).
 %
 % Required existing functions on the MATLAB path:
 %   getSurfaceNormalFromDiffuseReflection_AccurateNew (your +z version)
@@ -37,6 +43,7 @@ Mask_object = logical(Mask);
 assert(h>1 && w>1 && isequal(size(Psi),[h,w],size(Beta)), ...
     'Mask, Psi and Beta must have the same image size.');
 assert(isreal(Psi) && isreal(Beta), 'Psi and Beta must be real angles.');
+Psi=double(Psi); Beta=double(Beta);
 images = double(cat(3,polarImage.I0,polarImage.I45, ...
     polarImage.I90,polarImage.I135));
 assert(isequal(size(images),[h,w,4]) && isreal(images), ...
@@ -83,11 +90,15 @@ assert(max(abs(sum(n2.*v,2)-ct))<1e-6, ...
 
 %% Normalized image coordinates and finite differences
 x=-v(:,1)./v(:,3); y=-v(:,2)./v(:,3);
-[B,fitError]=pixelMetric(Mask,x,y);  % [wx;wy] = B*[w_column;w_row]
 [Du,Dr,L,ids]=maskedOperators(Mask);
-Dx=B(1,1)*Du+B(1,2)*Dr;
-Dy=B(2,1)*Du+B(2,2)*Dr;
+[B,geometryInfo]=localPixelMetric(Mask,x,y,Du,Dr);
 n=nnz(Mask); Q=sqrt(1+x.^2+y.^2);
+diagS=@(a) spdiags(a,0,n,n);
+Dx=diagS(B.b11)*Du+diagS(B.b12)*Dr;
+Dy=diagS(B.b21)*Du+diagS(B.b22)*Dr;
+metricValid=B.valid;
+% Degenerate derivative rows are omitted from geometric constraints/output.
+assert(any(metricValid), 'No pixels have an invertible local ray mapping.');
 
 %% Perspective convexity prior and candidate propagation (no ground truth)
 [normalPrior,bw]=silhouettePrior(Mask_object,Mask,B,x,y,v,ct);
@@ -101,20 +112,21 @@ J=Iun0./albedo;
 ep=cross(v,n1,2); epLength=vecnorm(ep,2,2);
 ep=ep./max(epLength,1e-12);
 ep(epLength<1e-8,:)=0;             % Azimuth undefined at zero zenith
-diagS=@(a) spdiags(a,0,n,n);
 Aphase=diagS(ep(:,1)+x.*ep(:,3))*Dx + ...
        diagS(ep(:,2)+y.*ep(:,3))*Dy;
 bphase=-ep(:,3);
 Ashade=diagS(s(1)+x*s(3))*Dx + diagS(s(2)+y*s(3))*Dy;
 bshade=J./(ct.*Q)-s(3);
-A=[Aphase;Ashade;smoothWeight*L];
-rhs=[bphase;bshade;zeros(size(L,1),1)];
+A=[Aphase(metricValid,:);Ashade(metricValid,:);smoothWeight*L];
+rhs=[bphase(metricValid);bshade(metricValid);zeros(size(L,1),1)];
 
 % Lift the boundary azimuth prior to the local viewing-transverse plane.
 if boundaryWeight>0
     wt=boundaryWeight*bw;
-    A=[A;diagS(wt.*ct)*Dx;diagS(wt.*ct)*Dy];
-    rhs=[rhs;wt.*normalPrior(:,1)./Q;wt.*normalPrior(:,2)./Q];
+    Abx=diagS(wt.*ct)*Dx; Aby=diagS(wt.*ct)*Dy;
+    bbx=wt.*normalPrior(:,1)./Q; bby=wt.*normalPrior(:,2)./Q;
+    A=[A;Abx(metricValid,:);Aby(metricValid,:)];
+    rhs=[rhs;bbx(metricValid);bby(metricValid)];
 end
 
 % One exact log-depth anchor per 4-connected component fixes scale only.
@@ -129,17 +141,24 @@ wx=Dx*logDepth; wy=Dy*logDepth;
 nv=[wx,wy,1+x.*wx+y.*wy];
 nv=nv./vecnorm(nv,2,2);
 hasGradient=full(sum(abs(Du),2)>0 & sum(abs(Dr),2)>0);
-valid=hasGradient & isfinite(logDepth) & all(isfinite(nv),2);
+valid=metricValid & hasGradient & isfinite(logDepth) & all(isfinite(nv),2);
 idx=find(Mask); Mask_eval=false(h,w); Mask_eval(idx(valid))=true;
 out=NaN(h*w,3); out(idx(valid),:)=nv(valid,:);
 N_SmithPers=reshape(out,h,w,3);
 if nargout>2
     info=struct('lambdaAlbedo',lambdaAlbedo,'smoothWeight',smoothWeight, ...
-        'boundaryWeight',boundaryWeight,'geometryFitError',fitError, ...
+        'boundaryWeight',boundaryWeight, ...
+        'geometryFitError',geometryInfo.affineFitError, ...
+        'geometryModel','calibrated central rays with local Jacobians', ...
+        'geometry',geometryInfo, ...
         'pixelToNormalizedGradient',B,'numComponents',cc.NumObjects, ...
         'numInputPixels',nnz(Mask_object),'numOutputPixels',nnz(Mask_eval), ...
         'albedoOptimization',albedoInfo, ...
         'relativeResidual',norm(A*logDepth-rhs)/max(norm(rhs),eps));
+    % B contains vectors in find(Mask) order; these fields identify that order.
+    info.metricPixelIndices=idx;
+    info.geometryValidMask=false(h,w);
+    info.geometryValidMask(idx(metricValid))=true;
     info.albedo=NaN(h,w); info.albedo(Mask)=albedo;
     info.Iun0=NaN(h,w); info.Iun0(Mask)=Iun0;
     info.logDepth=NaN(h,w); info.logDepth(Mask)=logDepth;
@@ -148,20 +167,56 @@ if nargout>2
 end
 end
 
-function [B,fitError]=pixelMetric(Mask,x,y)
-% Psi/Beta encode calibration. Recover its affine normalized image mapping.
+function [B,info]=localPixelMetric(Mask,x,y,Du,Dr)
+% Local inverse-transpose of J=[x_u,x_r; y_u,y_r].
+% Use the SAME masked difference stencils for ray coordinates and log depth.
+% This preserves Dx*x=1, Dx*y=0, Dy*x=0, Dy*y=1 at valid rows.
+% One-sided differences at boundaries are retained from the original solver.
+xu=Du*x; xr=Dr*x;
+yu=Du*y; yr=Dr*y;
+detJ=xu.*yr-xr.*yu;
+frob2=xu.^2+xr.^2+yu.^2+yr.^2;
+% Dimensionless singularity measure, in [0,1] for finite real 2x2 matrices.
+quality=zeros(size(x));
+finite=isfinite(frob2) & frob2>0 & isfinite(detJ);
+quality(finite)=2*abs(detJ(finite))./frob2(finite);
+valid=finite & quality>1e-8;
+
+B=struct('b11',zeros(size(x)),'b12',zeros(size(x)), ...
+         'b21',zeros(size(x)),'b22',zeros(size(x)),'valid',valid);
+B.b11(valid)= yr(valid)./detJ(valid);
+B.b12(valid)=-yu(valid)./detJ(valid);
+B.b21(valid)=-xr(valid)./detJ(valid);
+B.b22(valid)= xu(valid)./detJ(valid);
+assert(any(valid), 'Calibrated rays do not define a locally invertible 2D grid.');
+if nnz(~valid)>0
+    warning('SmithPers:DegenerateRayMetric', ...
+        '%d pixels lack a usable local coordinate Jacobian; omitted from geometric rows and output.', ...
+        nnz(~valid));
+end
+% A fold/sign reversal can indicate a bad calibration or grid correspondence.
+assert(~(any(detJ(valid)>0) && any(detJ(valid)<0)), ...
+    'The ray-coordinate Jacobian changes orientation. Check calibration/grid alignment.');
+
+% Affine fit is DIAGNOSTIC ONLY. It is never used to reconstruct the surface.
 [r,u]=find(Mask);
 G=[ones(numel(u),1),double(u)-mean(u),double(r)-mean(r)];
-assert(rank(G)==3, 'Valid pixels must span two image dimensions.');
-T=G\[x,y];
-fitError=max(vecnorm(G*T-[x,y],2,2));
-assert(fitError<1e-6*max(1,max(vecnorm([x,y],2,2))), ...
-    ['Psi/Beta do not describe an undistorted pinhole pixel grid. ', ...
-     'Check angle conventions, calibration and image resolution.']);
-J=[T(2,:).',T(3,:).'];
-assert(rcond(J)>1e-10, ...
-    'Viewing geometry is degenerate; use the orthographic solver if Beta=0 everywhere.');
-B=J.'\eye(2);
+fitError=NaN; pixelRMS=NaN; pixelMax=NaN;
+if rank(G)==3
+    T=G\[x,y]; residual=G*T-[x,y];
+    fitError=max(vecnorm(residual,2,2));
+    Jfit=[T(2,:).',T(3,:).'];
+    if rcond(Jfit)>1e-10
+        pe=vecnorm((Jfit\residual.').',2,2);
+        pixelRMS=sqrt(mean(pe.^2)); pixelMax=max(pe);
+    end
+end
+info=struct('affineFitError',fitError, ...
+    'affineEquivalentPixelRMS',pixelRMS, ...
+    'affineEquivalentPixelMax',pixelMax, ...
+    'minJacobianQuality',min(quality(valid)), ...
+    'numValidMetricPixels',nnz(valid),'numDegenerateMetricPixels',nnz(~valid), ...
+    'differenceScheme','masked forward/backward differences');
 end
 
 function [Du,Dr,L,ids]=maskedOperators(Mask)
@@ -195,12 +250,15 @@ p=padarray(objectMask,[1,1],false,'both');
 F=imgaussfilt(double(bwdist(~p))-double(bwdist(p)),1);
 F=F(2:end-1,2:end-1);
 [Fu,Fr]=gradient(F);
-gx=-(B(1,1)*Fu+B(1,2)*Fr);
-gy=-(B(2,1)*Fu+B(2,2)*Fr);
-good=objectMask & hypot(gx,gy)>1e-10;
+% Apply each pixel's local inverse-transpose Jacobian to image covectors.
+% B vectors follow find(Mask), exactly as in the reconstruction operators.
+gx=NaN(size(Mask)); gy=NaN(size(Mask));
+gx(Mask)=-(B.b11.*Fu(Mask)+B.b12.*Fr(Mask));
+gy(Mask)=-(B.b21.*Fu(Mask)+B.b22.*Fr(Mask));
+good=Mask & isfinite(gx) & isfinite(gy) & hypot(gx,gy)>1e-10;
 assert(any(good(:)), 'Cannot construct the silhouette prior.');
 [~,near]=bwdist(good);
-bad=objectMask & ~good; gx(bad)=gx(near(bad)); gy(bad)=gy(near(bad));
+bad=Mask & ~good; gx(bad)=gx(near(bad)); gy(bad)=gy(near(bad));
 gx=gx(Mask); gy=gy(Mask);
 e=[gx,gy,x.*gx+y.*gy]; e=e./vecnorm(e,2,2);
 normalPrior=v.*ct + e.*sqrt(max(0,1-ct.^2));

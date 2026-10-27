@@ -19,17 +19,17 @@ Psi = getPsiAngle(V, true(rows, cols));
 for num = 1 : length(dataset.sphere)
     polarImage = dataset.sphere(num).polarImage;
     Mask = dataset.sphere(num).mask;
-    % desired
+%     desired
     [N_desired, ~, Mask_valid, ~] = getSphereNormalFromViewingDirection(V, Mask);
-    % methods
-    N_Atkinson = getSurfaceNormalFromDiffuseReflection_AccurateNew(polarImage, Psi_orth, Beta_orth, V_orth, eta, a, Mask);
-    N_AtkinsonPers = getSurfaceNormalFromDiffuseReflection_AccurateNew(polarImage, Psi, Beta, V, eta, a, Mask);
+%     methods
+    N_Atkinson = getSurfaceNormalFromDiffuseReflection_AccurateNew(polarImage, Psi_orth, Beta_orth, V_orth, eta, a, Mask_valid);
+    N_AtkinsonPers = getSurfaceNormalFromDiffuseReflection_AccurateNew(polarImage, Psi, Beta, V, eta, a, Mask_valid);
     N_Atkinson = getRefinedSurfaceNormal(N_Atkinson, N_desired);
     N_AtkinsonPers = getRefinedSurfaceNormal(N_AtkinsonPers, N_desired);
-    % error
+%     error
     error_Atkinson = rad2deg(getErrorNormalAngle(N_Atkinson, N_desired, Mask_valid));
     error_AtkinsonPers = rad2deg(getErrorNormalAngle(N_AtkinsonPers, N_desired, Mask_valid));  
-    % output
+%     output
     statistic_Atkinson = getStatistic(error_Atkinson, Mask_valid);
     statistic_AtkinsonPers = getStatistic(error_AtkinsonPers, Mask_valid);
     fprintf("Sphere dataset %i --- Atkinson2006 method: Orth. / Pers.:  \n", num);
@@ -37,25 +37,41 @@ for num = 1 : length(dataset.sphere)
     fprintf("\tMED:  %.3f / %.3f / %.3f%%\n", statistic_Atkinson.MED, statistic_AtkinsonPers.MED, (statistic_Atkinson.MED - statistic_AtkinsonPers.MED) / statistic_Atkinson.MED * 100);
 %     fprintf("\tMax:  %.3f / %.3f / %.3f%%", statistic_Atkinson.MAX, statistic_AtkinsonPers.MAX, (statistic_Atkinson.MAX - statistic_AtkinsonPers.MAX) / statistic_Atkinson.MAX * 100);
 %     fprintf("\tSD:  %.3f / %.3f / %.3f%%\n", statistic_Atkinson.SD, statistic_AtkinsonPers.SD, (statistic_Atkinson.SD - statistic_AtkinsonPers.SD) / statistic_Atkinson.SD * 100);
+    figure('Position', [0, 0, 1400, 750], 'Color', 'w'); 
+    subplot(2, 2, 1); imshow(dataset.sphere(num).polarImage.I0, []);
+    subplot(2, 2, 2); imshow(dataset.sphere(num).polarImage.I45, []);
+    subplot(2, 2, 3); imshow(dataset.sphere(num).polarImage.I90, []);
+    subplot(2, 2, 4); imshow(dataset.sphere(num).polarImage.I135, []);
+    figure; 
+    ax = subplot(1, 2, 1); h = imagesc(error_Atkinson); set(h, 'AlphaData', Mask_valid); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Orth.');
+    ax = subplot(1, 2, 2); h = imagesc(error_AtkinsonPers); set(h, 'AlphaData', Mask_valid); set(ax, 'Color', 'k'); colormap(parula); colorbar; title('Pers.');
+    fig = figure; plot3DShape(fig, N_desired, Mask_valid);
+    fig = figure; plot3DShape(fig, N_Atkinson, Mask_valid);
+    fig = figure; plot3DShape(fig, N_AtkinsonPers, Mask_valid);
 end
-
-
 %% Smith2019 
-% % methods
-% [N_Smith, Mask_SmithOrth] = getSurfaceNormal_Smith2019(polarImage, eta, Mask, lightDirection');  
-% [N_SmithPers, Mask_SmithPers] = getSurfaceNormal_Smith2019Pers(polarImage, eta, Mask, lightDirection', Psi, Beta);   
-% Mask_Smith = Mask_valid & Mask_SmithOrth & Mask_SmithPers;
-% % error
-% error_Smith = rad2deg(getErrorNormalAngle(N_Smith, N_desired, Mask_Smith));
-% error_SmithPers = rad2deg(getErrorNormalAngle(N_SmithPers, N_desired, Mask_Smith));  
-% % output
-% statistic_Smith = getStatistic(error_Smith, Mask_Smith);
-% statistic_SmithPers = getStatistic(error_SmithPers, Mask_Smith);
-% fprintf("Sphere dataset---Smith2019 method: Orth. / Pers.:  \n")
-% fprintf("\tMAE:  %.3f / %.3f / %.3f%%", statistic_Smith.MAE, statistic_SmithPers.MAE, (statistic_Smith.MAE - statistic_SmithPers.MAE) / statistic_Smith.MAE * 100);
-% fprintf("\tMED:  %.3f / %.3f / %.3f%%\n", statistic_Smith.MED, statistic_SmithPers.MED, (statistic_Smith.MED - statistic_SmithPers.MED) / statistic_Smith.MED * 100);
-% fprintf("\tMax:  %.3f / %.3f / %.3f%%", statistic_Smith.MAX, statistic_SmithPers.MAX, (statistic_Smith.MAX - statistic_SmithPers.MAX) / statistic_Smith.MAX * 100);
-% fprintf("\tSD:  %.3f / %.3f / %.3f%%", statistic_Smith.SD, statistic_SmithPers.SD, (statistic_Smith.SD - statistic_SmithPers.SD) / statistic_Smith.SD * 100);
+% lightDirection = [sin(pi/4)*cos(pi/4), sin(pi/4)*sin(pi/4), cos(pi/4)];
+% for num = 1 : length(dataset.sphere)
+%     polarImage = dataset.sphere(num).polarImage;
+%     Mask = dataset.sphere(num).mask;
+%     % desired
+%     [N_desired, ~, Mask_valid, ~] = getSphereNormalFromViewingDirection(V, Mask);
+%     % methods
+%     [N_Smith, Mask_SmithOrth] = getSurfaceNormal_Smith2019(polarImage, eta, Mask_valid, lightDirection');  
+%     [N_SmithPers, Mask_SmithPers] = getSurfaceNormal_Smith2019Pers(polarImage, eta, Mask_valid, lightDirection', Psi, Beta);   
+%     Mask_Smith = Mask_valid & Mask_SmithOrth & Mask_SmithPers;
+%     % error
+%     error_Smith = rad2deg(getErrorNormalAngle(N_Smith, N_desired, Mask_Smith));
+%     error_SmithPers = rad2deg(getErrorNormalAngle(N_SmithPers, N_desired, Mask_Smith));  
+%     % output
+%     statistic_Smith = getStatistic(error_Smith, Mask_Smith);
+%     statistic_SmithPers = getStatistic(error_SmithPers, Mask_Smith);
+%     fprintf("Sphere dataset---Smith2019 method: Orth. / Pers.:  \n")
+%     fprintf("\tMAE:  %.3f / %.3f / %.3f%%", statistic_Smith.MAE, statistic_SmithPers.MAE, (statistic_Smith.MAE - statistic_SmithPers.MAE) / statistic_Smith.MAE * 100);
+%     fprintf("\tMED:  %.3f / %.3f / %.3f%%\n", statistic_Smith.MED, statistic_SmithPers.MED, (statistic_Smith.MED - statistic_SmithPers.MED) / statistic_Smith.MED * 100);
+%     fprintf("\tMax:  %.3f / %.3f / %.3f%%", statistic_Smith.MAX, statistic_SmithPers.MAX, (statistic_Smith.MAX - statistic_SmithPers.MAX) / statistic_Smith.MAX * 100);
+%     fprintf("\tSD:  %.3f / %.3f / %.3f%%\n", statistic_Smith.SD, statistic_SmithPers.SD, (statistic_Smith.SD - statistic_SmithPers.SD) / statistic_Smith.SD * 100);
+% end
 %% Ngo2022 
 % % methods
 % [N_Ngo, eta_Ngo2022] = getNormalNgo2022(objData, cfg);
