@@ -1,4 +1,4 @@
-function [N_Ngo, eta_Ngo] = getNormalNgo2022_Pers(objData, K, cfg)
+function [N_Ngo, eta_Ngo] = getNormalNgo2022_Pers(objData, K_or_V, cfg)
     Mask = objData(1).mask;
     [rows, cols] = size(Mask);
     pages = length(objData);
@@ -7,11 +7,16 @@ function [N_Ngo, eta_Ngo] = getNormalNgo2022_Pers(objData, K, cfg)
     numPixels = numel(pixelList);
     %% Prepare data
     [iList, lList] = getData(objData, rowList, colList, pages);
-    V = getViewingDirection(K, Mask);
+    if isequal(size(K_or_V), [3, 3])
+        V = getViewingDirection(double(K_or_V), Mask);
+    elseif isequal(size(K_or_V), [rows, cols, 3])
+        V = double(K_or_V);
+    end
     V_list = reshape(V, [], 3);
     V_list = V_list(pixelList, :);
     %% Initialization
     [N_init, eta_init] = getInit(iList, lList);
+%     [N_init, eta_init] = getInitNew(iList, lList, cfg);
     cosTheta0 = sum(N_init .* V_list, 2);
     theta0 = acos(max(-1, min(1, cosTheta0)));
     dx = V_list(:,3).*N_init(:,1) - N_init(:,3).*V_list(:,1);
@@ -195,6 +200,38 @@ function [iList, lList] = getData(objData, rowList, colList, pages)
             iList(page,:, num) = [objData(page).polarImage.I0(row, col), objData(page).polarImage.I45(row, col), objData(page).polarImage.I90(row, col), objData(page).polarImage.I135(row, col)];                   
         end
         iList(page,:, :) = iList(page,:, :) ./ E;
+    end
+end
+
+function [N, eta] = getInitNew(iList, lList, cfg)
+    numPixels = size(iList, 3);
+    N = NaN(numPixels, 3);
+    eta = NaN(numPixels, 1);
+
+    for num = 1:numPixels
+        I = iList(:,:,num);
+
+        % 某组光照的四个偏振通道均有效，才保留该光照
+        validLight = all(isfinite(I) & I >= 0 & ...
+                         I >= cfg.darkThreshold, 2);
+
+        L = lList(validLight,:);
+
+        % 光度立体初始化至少需要三个有效且满秩的方向
+        if nnz(validLight) < 3 || rank(L) < 3
+            continue;
+        end
+
+        iMean = mean(I(validLight,:), 2);
+        g = L \ iMean;
+        gLength = norm(g);
+
+        if ~all(isfinite(g)) || ~isfinite(gLength) || gLength == 0
+            continue;
+        end
+
+        N(num,:) = (g / gLength).';
+        eta(num) = 1;
     end
 end
 

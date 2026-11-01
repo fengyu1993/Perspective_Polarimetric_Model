@@ -9,6 +9,7 @@ function [N_Ngo, eta_Ngo] = getNormalNgo2022(objData, cfg)
     [iList, lList] = getData(objData, rowList, colList, pages);
     %% Initialization
     [N_init, eta_init] = getInit(iList, lList);
+%     [N_init, eta_init] = getInitNew(iList, lList, cfg);
     xInit = [acos(max(-1, min(1, N_init(:,3)))), atan2(N_init(:,2), N_init(:,1)), eta_init];
     %% Allocate outputs
     N_list = NaN(numPixels, 3);
@@ -158,6 +159,38 @@ function [iList, lList] = getData(objData, rowList, colList, pages)
             iList(page,:, num) = [objData(page).polarImage.I0(row, col), objData(page).polarImage.I45(row, col), objData(page).polarImage.I90(row, col), objData(page).polarImage.I135(row, col)];                   
         end
         iList(page,:, :) = iList(page,:, :) ./ E;
+    end
+end
+
+function [N, eta] = getInitNew(iList, lList, cfg)
+    numPixels = size(iList, 3);
+    N = NaN(numPixels, 3);
+    eta = NaN(numPixels, 1);
+
+    for num = 1:numPixels
+        I = iList(:,:,num);
+
+        % 某组光照的四个偏振通道均有效，才保留该光照
+        validLight = all(isfinite(I) & I >= 0 & ...
+                         I >= cfg.darkThreshold, 2);
+
+        L = lList(validLight,:);
+
+        % 光度立体初始化至少需要三个有效且满秩的方向
+        if nnz(validLight) < 3 || rank(L) < 3
+            continue;
+        end
+
+        iMean = mean(I(validLight,:), 2);
+        g = L \ iMean;
+        gLength = norm(g);
+
+        if ~all(isfinite(g)) || ~isfinite(gLength) || gLength == 0
+            continue;
+        end
+
+        N(num,:) = (g / gLength).';
+        eta(num) = 1;
     end
 end
 

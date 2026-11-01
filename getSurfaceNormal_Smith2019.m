@@ -17,7 +17,7 @@ function [N_Smith, Mask_eval]  = getSurfaceNormal_Smith2019(polarImage, eta, Mas
 %     height = HfPol(theta_est, Iun_est, phi_est, s, Mask, false, spec, azi, Bdist);
     %% Height reconstruction TPAMI 2019
     N_init = Propagation(rho_est, phi_est, Mask, eta);
-    lambda = 0;%1e-4;
+    lambda = 0; %1e-1; %1e-4;
     [albedo, info] = estimateAlbedoTPAMI(theta_est, phi_est, Iun_est, s0, Mask, N_init, lambda);
     I_corrected = zeros(size(Iun_est));
     I_corrected(Mask) = Iun_est(Mask) ./ albedo(Mask);
