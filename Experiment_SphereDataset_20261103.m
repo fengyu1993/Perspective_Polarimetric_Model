@@ -4,7 +4,9 @@ clear;
 close all;
 %% load data
 % dataset = getSphereDataset_20261103(".\Data\Sphere\data_20261103");
-dataset = load("Data\Data_SphereDataset_20261103.mat");
+% dataset = getSphereDataset_20261103_undistort(".\Data\Sphere\data_20261103");
+% dataset = load("Data\Data_SphereDataset_20261103.mat");
+dataset = load("Data\Data_SphereDataset_20261103_undistort.mat");
 nameList = dataset.nameList;
 %% parameters
 eta = 1.5; 
@@ -269,7 +271,8 @@ function dataset = getSphereDataset_20261103(location)
     posNum = "P" + string(1:12);
     lightNum = "L" + string(1:6);
     dataset = struct(); 
-    dataset.view_dirs = load(fullfile(location, 'view_dirs.mat')).dirs;
+%     dataset.view_dirs = load(fullfile(location, 'view_dirs.mat')).dirs;
+    dataset.view_dirs = load(fullfile(location, 'view_dirs_corrected_raw.mat')).dirs;
     dataset.cameraParams = load(fullfile(location, 'cameraParams.mat')).cameraParams;
     % data
     for j = 1 : length(posNum)
@@ -315,4 +318,47 @@ function dataset = getSphereDataset_20261103(location)
     save('./Data/Data_SphereDataset_20261103.mat', '-struct', 'dataset');
 end
 
+function dataset = getSphereDataset_20261103_undistort(location)
+    posNum = "P" + string(1:12);
+    lightNum = "L" + string(1:6);
+    dataset = struct(); 
+    dataset.view_dirs = load(fullfile(location, 'view_dirs.mat')).dirs;
+    dataset.cameraParams = load(fullfile(location, 'cameraParams.mat')).cameraParams;
+    % data
+    for j = 1 : length(posNum)
+        folderPath = fullfile(location, string(posNum(j)));  
+        current_objects = char(posNum(j));
+        for k = 1 : length(lightNum)
+            folderPathSub = fullfile(folderPath, string(lightNum(k)));
 
+            dataset.(current_objects)(k).polarImage.I0 = rgb2gray(im2double(imread(fullfile(folderPathSub, '2_0°.png'))));
+            dataset.(current_objects)(k).polarImage.I45 = rgb2gray(im2double(imread(fullfile(folderPathSub, '2_45°.png'))));
+            dataset.(current_objects)(k).polarImage.I90 = rgb2gray(im2double(imread(fullfile(folderPathSub, '2_90°.png'))));
+            dataset.(current_objects)(k).polarImage.I135 = rgb2gray(im2double(imread(fullfile(folderPathSub, '2_135°.png'))));
+            
+            dataset.(current_objects)(k).lightDirection = str2num(char(extractBetween(fileread(fullfile(folderPathSub, 'LightDirection.txt')), '[', ']'))); 
+            dataset.(current_objects)(k).lightDirection = dataset.(current_objects)(k).lightDirection ./ norm(dataset.(current_objects)(k).lightDirection);
+            txtPath = fullfile(folderPathSub, 'Intensity.txt');
+            dataset.(current_objects)(k).intensity = sscanf(fileread(txtPath), 'Intensity: %f');
+            dataset.(current_objects)(k).mask = im2double(imread(fullfile(folderPath, 'mask_2.png'))) > 0.99;
+            dataset.(current_objects)(k).maskAll = im2double(imread(fullfile(folderPath, 'mask_B.png'))) > 0.99;
+%             figure('Position', [0, 0, 1400, 750], 'Color', 'w'); 
+%             subplot(2, 4, 1); imshow(dataset.(current_objects)(k).polarImage.I0, []);
+%             subplot(2, 4, 2); imshow(dataset.(current_objects)(k).polarImage.I45, []);
+%             subplot(2, 4, 3); imshow(dataset.(current_objects)(k).polarImage.I90, []);
+%             subplot(2, 4, 4); imshow(dataset.(current_objects)(k).polarImage.I135, []);
+%             dataset.(current_objects)(k).polarImage.I0(~dataset.(current_objects)(k).mask) = 0;
+%             dataset.(current_objects)(k).polarImage.I45(~dataset.(current_objects)(k).mask) = 0;
+%             dataset.(current_objects)(k).polarImage.I90(~dataset.(current_objects)(k).mask) = 0;
+%             dataset.(current_objects)(k).polarImage.I135(~dataset.(current_objects)(k).mask) = 0;
+%             subplot(2, 4, 5); imshow(dataset.(current_objects)(k).polarImage.I0, []);
+%             subplot(2, 4, 6); imshow(dataset.(current_objects)(k).polarImage.I45, []);
+%             subplot(2, 4, 7); imshow(dataset.(current_objects)(k).polarImage.I90, []);
+%             subplot(2, 4, 8); imshow(dataset.(current_objects)(k).polarImage.I135, []);         
+        end
+        close all;
+    end 
+    %% save
+    dataset.nameList = posNum;
+    save('./Data/Data_SphereDataset_20261103_undistort.mat', '-struct', 'dataset');
+end
