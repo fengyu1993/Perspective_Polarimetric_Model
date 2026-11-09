@@ -52,8 +52,8 @@ close all;
 %     plot((orthResult_Ngo2022(i,:) - persResult_Ngo2022(i,:)) ./ orthResult_Ngo2022(i,:) * 100);
 %     title(num2str(i));
 % end
-P_id = [2;  3;  5;  8;  10; 12; 14; 15; 18; 19; 21; 24; 26; 27; 30; 32];
-L_id = [19; 10; 24; 8;  25; 2;  17; 2;  22; 20; 9;  11; 8;  20; 21; 12];
+P_id = [2;  3;  6;  8;  10; 12; 14; 15; 18; 19; 21; 24; 26; 28; 30; 32];
+L_id = [19; 10; 10; 6;  25; 2;  21; 2;  15; 2;  9;  11; 8;  1; 1; 2];
 orthResult_Ngo2022_end = NaN(16, 1); 
 persResult_Ngo2022_end = NaN(16, 1); 
 orthResult_Smith2019_end = NaN(16, 1); 
@@ -69,6 +69,10 @@ for i = 1 : 16
     persResult_Smith2019_end(i) = persResult_Smith2019(row, col);
     orthResult_Atkinson2006_end(i) = orthResult_Atkinson2006(row, col);
     persResult_Atkinson2006_end(i) = persResult_Atkinson2006(row, col);
+    fprintf("P%i: \t", row);
+    fprintf("%i ", combinations(col,:));
+    fprintf("\n");
+
 end
 %%
 figNgo2022 = figure;
@@ -77,7 +81,6 @@ figSmith2019 = figure;
 plotdata(figSmith2019, orthResult_Smith2019_end, persResult_Smith2019_end);
 figAtkinson2006 = figure;
 plotdata(figAtkinson2006, orthResult_Atkinson2006_end, persResult_Atkinson2006_end);
-
 
 
 
@@ -115,7 +118,7 @@ function plotdata(fig, orthResult, persResult)
     h = heatmap((resultOrth - resultPers) ./ resultOrth *100); h.Colormap = parula;
 end
 function [orthResult_Atkinson2006, persResult_Atkinson2006] = getAtkinson2006Result(combinations)
-    result = load("Data\Data_ExperimentSphereDataset20261104_OursVsAtkinson2006.mat");
+    result = load("Data\Data_ExperimentSphereDataset20261107_OursVsAtkinson2006.mat");
     orthResult_Atkinson2006 = NaN(32, 28);
     persResult_Atkinson2006 = NaN(32, 28);
     for i = 1 : 32 
@@ -130,7 +133,7 @@ function [orthResult_Atkinson2006, persResult_Atkinson2006] = getAtkinson2006Res
 end
 
 function [orthResult_Smith2019, persResult_Smith2019] = getSmith2019Result(combinations)
-    result = load("Data\Data_ExperimentSphereDataset20261104_OursVsSmith2019.mat");
+    result = load("Data\Data_ExperimentSphereDataset20261107_OursVsSmith2019.mat");
     orthResult_Smith2019 = NaN(32, 28);
     persResult_Smith2019 = NaN(32, 28);
     for i = 1 : 32 
@@ -156,6 +159,19 @@ function [orthResult_Ngo2022, persResult_Ngo2022, combinations] = getNgo2022Resu
     P23_26 = load(".\Data\Data_ExperimentSphereDataset20261104_OursVsNgo2022_P23_26_L6.mat");
     P27 = load(".\Data\Data_ExperimentSphereDataset20261104_OursVsNgo2022_P27_L6.mat");
     P28_32 = load(".\Data\Data_ExperimentSphereDataset20261104_OursVsNgo2022_P28_32_L6.mat");
+    %%
+    id = [5, 6, 17, 18, 29, 30, 31, 32];
+    PX = load(".\Data\Data_ExperimentSphereDataset20261104_OursVsNgo2022_PX_L6.mat");
+    P1_8.maeOrth(5:6,:) = PX.maeOrth(1:2,:);  P1_8.maePers(5:6,:) = PX.maePers(1:2,:);
+    P17_18.maeOrth(1:2,:) = PX.maeOrth(3:4,:);  P17_18.maePers(1:2,:) = PX.maePers(3:4,:);
+    P28_32.maeOrth(2:5,:) = PX.maeOrth(5:8,:);  P28_32.maePers(2:5,:) = PX.maePers(5:8,:);
+    %%
+    id = [13, 14, 19, 20, 27, 28, 29, 30, 31, 32];
+    PX = load(".\Data\Data_ExperimentSphereDataset20261107_OursVsNgo2022_13  14  19  20  27  28  29  30  31  32_L6.mat");
+    P13_14.maeOrth(1:2,:) = PX.maeOrth(1:2,:);  P13_14.maePers(1:2,:) = PX.maePers(1:2,:);
+    P19_22.maeOrth(1:2,:) = PX.maeOrth(3:4,:);  P19_22.maePers(1:2,:) = PX.maePers(3:4,:);
+    P27.maeOrth(1,:) = PX.maeOrth(5,:);  P27.maePers(1,:) = PX.maePers(5,:);
+    P28_32.maeOrth(1:5,:) = PX.maeOrth(6:10,:);  P28_32.maePers(1:5,:) = PX.maePers(6:10,:);
     %%
     combinations = P1_8.combinations;
     orthResult_Ngo2022 = NaN(32, 28);

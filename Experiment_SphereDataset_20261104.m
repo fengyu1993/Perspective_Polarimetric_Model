@@ -2,13 +2,11 @@
 clc; 
 clear; 
 close all;
-if isempty(gcp('nocreate'))
-    parpool('local', 2);
-end
+% if isempty(gcp('nocreate'))
+%     parpool('local', 2);
+% end
 %% load data
-% dataset = getSphereDataset_20261103(".\Data\Sphere\data_20261103");
 % dataset = getSphereDataset_20261104_undistort(".\Data\Sphere\data_20261104");
-% dataset = load("Data\Data_SphereDataset_20261103.mat");
 dataset = load("Data\Data_SphereDataset_20261104_undistort.mat");
 nameList = dataset.nameList;
 %% parameters
@@ -21,7 +19,7 @@ Psi_orth = zeros(rows, cols);
 V = dataset.view_dirs;
 Beta = getPerspectiveDistortionAngle(V, true(rows, cols));
 Psi = getPsiAngle(V, true(rows, cols));
-Flag = 2;
+Flag = 1;
 numLights = 8;
 %%
 if Flag == 1
@@ -31,10 +29,10 @@ if Flag == 1
     fprintf("Atkinson2006 method (Sphere dataset)\n");
     for numObj = 1 : length(nameList)
         objData = dataset.(nameList(numObj));
-        errorAll_Orth = NaN(rows, cols, 4);
-        errorAll_Pers = NaN(rows, cols, 4);
-        maskAll = false(rows, cols, 4);
-        for numLight = 1 : numLights
+        errorAll_Orth = NaN(rows, cols, numLights);
+        errorAll_Pers = NaN(rows, cols, numLights);
+        maskAll = false(rows, cols, numLights);
+        parfor numLight = 1 : numLights
             polarImage = objData(numLight).polarImage;
             Mask = objData(numLight).mask;
             % desired
@@ -80,9 +78,9 @@ elseif Flag == 2
     fprintf("Smith2019 method (Sphere dataset)\n");
     for numObj = 14 : length(nameList)
         objData = dataset.(nameList(numObj));
-        errorAll_Orth = NaN(rows, cols, 4);
-        errorAll_Pers = NaN(rows, cols, 4);
-        maskAll = false(rows, cols, 4);
+        errorAll_Orth = NaN(rows, cols, numLights);
+        errorAll_Pers = NaN(rows, cols, numLights);
+        maskAll = false(rows, cols, numLights);
         parfor numLight = 1 : numLights
             polarImage = objData(numLight).polarImage;
             Mask = objData(numLight).mask;
