@@ -51,15 +51,25 @@ close all;
 % fullPath = fullfile('./imageSphere/', 'fig_ErrorNgoTemp.png');
 % exportgraphics(figNgo(3), fullPath, 'Resolution', 300);
 %% Beta all plot
-[figAtkinsonBeta, betaAtkinsonStats] = plotErrorVsBeta(AtkinsonError, Beta);
-[figSmithBeta, betaSmithStats] = plotErrorVsBeta(SmithError, Beta);
-[figNgoBeta, betaNgoStats] = plotErrorVsBeta(NgoError, Beta);
-fullPath = fullfile('./imageSphere/', 'fig_AtkinsonErrorBeta.png');
-exportgraphics(figAtkinsonBeta, fullPath, 'Resolution', 300);
-fullPath = fullfile('./imageSphere/', 'fig_SmithErrorBeta.png');
-exportgraphics(figSmithBeta, fullPath, 'Resolution', 300);
-fullPath = fullfile('./imageSphere/', 'fig_SmithNgoBeta.png');
-exportgraphics(figNgoBeta, fullPath, 'Resolution', 300);
+% [figAtkinsonBeta, betaAtkinsonStats] = plotErrorVsBeta(AtkinsonError, Beta, 3);
+% [figSmithBeta, betaSmithStats] = plotErrorVsBeta(SmithError, Beta, 2);
+% [figNgoBeta, betaNgoStats] = plotErrorVsBeta(NgoError, Beta, 1);
+% [figBaBeta, betaBaStats] = plotErrorVsBeta(NgoError, Beta, 4);
+% fullPath = fullfile('./imageSphere/', 'fig_AtkinsonErrorBeta.png');
+% exportgraphics(figAtkinsonBeta, fullPath, 'Resolution', 300);
+% fullPath = fullfile('./imageSphere/', 'fig_SmithErrorBeta.png');
+% exportgraphics(figSmithBeta, fullPath, 'Resolution', 300);
+% fullPath = fullfile('./imageSphere/', 'fig_NgoBeta.png');
+% exportgraphics(figNgoBeta, fullPath, 'Resolution', 300);
+% fullPath = fullfile('./imageSphere/', 'fig_BaBeta.png');
+% exportgraphics(figBaBeta, fullPath, 'Resolution', 300);
+%% Heatmap
+figAtkinson = plotErrorHeatmap(AtkinsonError);
+figSmith = plotErrorHeatmap(SmithError);
+figNgo = plotErrorHeatmap(NgoError);
+
+
+
 %% Normal plot
 % nameList = "P" + string(1:16);
 % for numObj = 1 : 16
@@ -95,6 +105,74 @@ exportgraphics(figNgoBeta, fullPath, 'Resolution', 300);
 
 
 %% 
+function fig = plotErrorHeatmap(Error)
+    %% Compute MAE at each position
+    nameList = "P" + string(1:16);
+    maeOrth = NaN(16, 1);
+    maePers = NaN(16, 1);
+
+    for i = 1:numel(nameList)
+        D = Error.(char(nameList(i)));
+
+        E_orth = double(D.error_Orth);
+        E_pers = double(D.error_Pers);
+
+        assert(isequal(size(E_orth), size(E_pers)), ...
+            '%s：两种方法的误差尺寸不一致。', char(nameList(i)));
+
+        % 两种方法采用共同有效的观测
+        valid = isfinite(E_orth) & isfinite(E_pers);
+        if isfield(D, 'Mask')
+            valid = valid & logical(D.Mask);
+        end
+
+        E_orth(~valid) = NaN;
+        E_pers(~valid) = NaN;
+
+        % 先对光照平均，再对有效像素平均
+        pixelOrth = mean(E_orth, 3, 'omitnan');
+        pixelPers = mean(E_pers, 3, 'omitnan');
+        Mask = any(valid, 3);
+
+        if any(Mask(:))
+            maeOrth(i) = mean(pixelOrth(Mask));
+            maePers(i) = mean(pixelPers(Mask));
+        end
+    end
+
+    %% Arrange positions and calculate reduction
+    idx = [ 1,  2,  3,  4;
+            8,  7,  6,  5;
+            9, 10, 11, 12;
+           16, 15, 14, 13];
+
+    resultOrth = maeOrth(idx);
+    resultPers = maePers(idx);
+
+    reduction = NaN(size(resultOrth));
+    validRate = isfinite(resultOrth) & isfinite(resultPers) ...
+                & resultOrth > 0;
+
+    reduction(validRate) = ...
+        (resultOrth(validRate) - resultPers(validRate)) ...
+        ./ resultOrth(validRate) * 100;
+
+    %% Plot
+    fig = figure('Color', 'w', ...
+        'Position', [100, 100, 550, 450]);
+
+    h = heatmap(fig, reduction);
+    h.Colormap = parula;
+    h.FontName = 'Times New Roman';
+    h.FontSize = 20;
+    h.CellLabelFormat = '%.2f';
+    h.GridVisible = 'on';
+    h.MissingDataColor = [1, 1, 1];
+    h.MissingDataLabel = 'N/A';
+
+    h.XDisplayLabels = repmat({''}, 1, 4);
+    h.YDisplayLabels = repmat({''}, 1, 4);
+end
 
 function fig = plotAllDesiredNormal(data)
     nameList = "P" + string(1:16);
@@ -220,11 +298,10 @@ function fig = plotAllNgoNormal(Ngo)
 end
 
 
-function [fig, stats] = plotErrorVsBeta(Error, Beta)
+function [fig, stats] = plotErrorVsBeta(Error, Beta, num)
     %% Parameters
     betaStep = 1;       % beta 分组宽度，deg
     minSamples = 30;    % 每组最少有效样本数
-
     %% Beta bins
     Beta_deg = rad2deg(Beta);
     validBeta = isfinite(Beta_deg) & Beta_deg >= 0;
@@ -325,7 +402,7 @@ function [fig, stats] = plotErrorVsBeta(Error, Beta)
 
     %% Plot with two y-axes
     fig = figure('Color', 'w', ...
-        'Position', [100, 100, 750, 650]);
+        'Position', [100, 100, 750, 550]);
     ax = axes('Parent', fig);
     hold(ax, 'on');
 
@@ -378,7 +455,6 @@ function [fig, stats] = plotErrorVsBeta(Error, Beta)
     end
 
     %% Appearance
-    xlabel(ax, '\beta (\circ)');
     xlim(ax, [0, 30]);
     xticks(ax, [0, 10, 20, 30]);
 
@@ -386,16 +462,38 @@ function [fig, stats] = plotErrorVsBeta(Error, Beta)
     box(ax, 'on');
 
     set(ax, 'FontName', 'Times New Roman', ...
-        'FontSize', 40, 'LineWidth', 2.5);
-
+        'FontSize', 44, 'LineWidth', 2.5);
     ax.YAxis(1).Color = 'k';
     ax.YAxis(2).Color = colorRate;
 
+
+    xlabel(ax, '', 'FontSize', 42);
+    yyaxis(ax, 'right');
+    ylabel(ax, 'MAE reduction (%)', 'FontSize', 42);
+    yyaxis(ax, 'left');
+    ylabel(ax, 'MAE \Delta \gamma (\circ)', 'FontSize', 42);
+
     legend(ax, [hOrth, hPers], ...
         {'Orth.', 'Pers.'}, ...
-        'Location', 'northwest');
+        'Location', 'northwest', 'FontSize', 35);
 
-
+    if num == 1
+        yyaxis(ax, 'right');
+        ylabel(ax, ' ');
+    elseif num == 2
+        yyaxis(ax, 'right');
+        ylabel(ax, ' ');
+        yyaxis(ax, 'left');
+        ylabel(ax, ' ');
+    elseif num == 3
+        yyaxis(ax, 'right');
+        ylabel(ax, ' ');
+        yyaxis(ax, 'left');
+        ylabel(ax, ' ');
+    elseif num == 4
+        yyaxis(ax, 'left');
+        ylabel(ax, ' ');
+    end
 end
 
 function drawErrorBand(ax, x, mu, sd, keep, color)
@@ -648,19 +746,19 @@ function [Atkinson, Smith, Ngo, Beta] = getdata(dataDir)
     %% Atkinson
     for numObj = 1:numel(nameList)
         objName = char(nameList(numObj));
-        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsAtkinson_mask_', objName, '.mat']);
+        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsAtkinson_', objName, '.mat']);
         Atkinson.(objName) = load(fileName);
     end
     %% Smith
     for numObj = 1:numel(nameList)
         objName = char(nameList(numObj));
-        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsSmith_mask_', objName, '.mat']);
+        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsSmith_', objName, '.mat']);
         Smith.(objName) = load(fileName);
     end
     %% Smith
     for numObj = 1:numel(nameList)
         objName = char(nameList(numObj));
-        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsNgo_mask_', objName, '.mat']);
+        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsNgo_', objName, '.mat']);
         Ngo.(objName) = load(fileName);
     end
     %%
