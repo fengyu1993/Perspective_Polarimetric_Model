@@ -3,7 +3,7 @@ clc;
 % clear; 
 close all;
 %% Data
-% [Atkinson, Smith, Ngo, Beta] = getdata(".\Data");
+[Atkinson, Smith, Ngo, Beta] = getdata(".\Data");
 % dataset = load("Data\Data_SphereDataset.mat");
 %% Error
 % AtkinsonError = getError(Atkinson);
