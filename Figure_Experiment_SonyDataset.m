@@ -1,52 +1,66 @@
 %% Experiment Sony Dataset
 clc; clear; close all;
-%% Ours Vs Ngo2022
-% load data
-OursVsNgo = load('./Data/Data_ExperimentSonyDataset_OursVsNgo.mat');
-OursVsNgo_bear1 = get_DataNgo(OursVsNgo, 1);
-OursVsNgo_bear2 = get_DataNgo(OursVsNgo, 2);
-OursVsNgo_doll = get_DataNgo(OursVsNgo, 6);
-OursVsNgo_squirrel = get_DataNgo(OursVsNgo, 7);
-% plot
-[statisticsNgo_Ours_bear1, statisticsNgo_Other_bear1] = get_result(OursVsNgo_bear1);
-plot3DShapeRGB(OursVsNgo_bear1, 'bear1', 'Ngo2022');
-[statisticsNgo_Ours_bear2, statisticsNgo_Other_bear2] = get_result(OursVsNgo_bear2);
-plot3DShapeRGB(OursVsNgo_bear2, 'bear2', 'Ngo2022');
-[statisticsNgo_Ours_doll, statisticsNgo_Other_doll] = get_result(OursVsNgo_doll);
-plot3DShapeRGB(OursVsNgo_doll, 'doll', 'Ngo2022');
-[statisticsNgo_Ours_squirrel, statisticsNgo_Other_squirrel] = get_result(OursVsNgo_squirrel);
-plot3DShapeRGB(OursVsNgo_squirrel, 'squirrel', 'Ngo2022');
-%% Ours Vs Atkinson2006 TIP
-% load data
-OursVsAtkinson_bear1 = load('./Data/Data_ExperimentSonyDataset_OursVsAtkinson_bear1.mat');
-OursVsAtkinson_bear2 = load('./Data/Data_ExperimentSonyDataset_OursVsAtkinson_bear2.mat');
-OursVsAtkinson_doll = load('./Data/Data_ExperimentSonyDataset_OursVsAtkinson_doll.mat');
-OursVsAtkinson_squirrel = load('./Data/Data_ExperimentSonyDataset_OursVsAtkinson_squirrel.mat');
+%% Ours Vs Ngo2022 TPAMI
+% % load data
+% OursVsNgo = load('./Data/Data_ExperimentSonyDataset_OursVsNgo.mat');
+% OursVsNgo_bear1 = get_DataNgo(OursVsNgo, 1);
+% OursVsNgo_bear2 = get_DataNgo(OursVsNgo, 2);
+% OursVsNgo_doll = get_DataNgo(OursVsNgo, 6);
+% OursVsNgo_squirrel = get_DataNgo(OursVsNgo, 7);
 % % plot
-[statisticsAtkinson_Ours_bear1, statisticsAtkinson_Other_bear1] = get_result(OursVsAtkinson_bear1);
-plot3DShapeRGB(OursVsAtkinson_bear1, 'bear1', 'Atkinson2006');
-[statisticsAtkinson_Ours_bear2, statisticsAtkinson_Other_bear2] = get_result(OursVsAtkinson_bear2);
-plot3DShapeRGB(OursVsAtkinson_bear2, 'bear2', 'Atkinson2006');
-[statisticsAtkinson_Ours_doll, statisticsAtkinson_Other_doll] = get_result(OursVsAtkinson_doll);
-plot3DShapeRGB(OursVsAtkinson_doll, 'doll', 'Atkinson2006');
-[statisticsAtkinson_Ours_squirrel, statisticsAtkinson_Other_squirrel] = get_result(OursVsAtkinson_squirrel);
-plot3DShapeRGB(OursVsAtkinson_squirrel, 'squirrel', 'Atkinson2006');
+% [statisticsNgo_Ours_bear1, statisticsNgo_Other_bear1] = get_result(OursVsNgo_bear1);
+% plot3DShapeRGB(OursVsNgo_bear1, 'bear1', 'Ngo2022');
+% [statisticsNgo_Ours_bear2, statisticsNgo_Other_bear2] = get_result(OursVsNgo_bear2);
+% plot3DShapeRGB(OursVsNgo_bear2, 'bear2', 'Ngo2022');
+% [statisticsNgo_Ours_doll, statisticsNgo_Other_doll] = get_result(OursVsNgo_doll);
+% plot3DShapeRGB(OursVsNgo_doll, 'doll', 'Ngo2022');
+% [statisticsNgo_Ours_squirrel, statisticsNgo_Other_squirrel] = get_result(OursVsNgo_squirrel);
+% plot3DShapeRGB(OursVsNgo_squirrel, 'squirrel', 'Ngo2022');
+%% Ours Vs Atkinson2006 TIP
+% % load data
+% OursVsAtkinson_bear1 = load('./Data/Data_ExperimentSonyDataset_OursVsAtkinson_bear1.mat');
+% OursVsAtkinson_bear2 = load('./Data/Data_ExperimentSonyDataset_OursVsAtkinson_bear2.mat');
+% OursVsAtkinson_doll = load('./Data/Data_ExperimentSonyDataset_OursVsAtkinson_doll.mat');
+% OursVsAtkinson_squirrel = load('./Data/Data_ExperimentSonyDataset_OursVsAtkinson_squirrel.mat');
+% % % plot
+% [statisticsAtkinson_Ours_bear1, statisticsAtkinson_Other_bear1] = get_result(OursVsAtkinson_bear1);
+% plot3DShapeRGB(OursVsAtkinson_bear1, 'bear1', 'Atkinson2006');
+% [statisticsAtkinson_Ours_bear2, statisticsAtkinson_Other_bear2] = get_result(OursVsAtkinson_bear2);
+% plot3DShapeRGB(OursVsAtkinson_bear2, 'bear2', 'Atkinson2006');
+% [statisticsAtkinson_Ours_doll, statisticsAtkinson_Other_doll] = get_result(OursVsAtkinson_doll);
+% plot3DShapeRGB(OursVsAtkinson_doll, 'doll', 'Atkinson2006');
+% [statisticsAtkinson_Ours_squirrel, statisticsAtkinson_Other_squirrel] = get_result(OursVsAtkinson_squirrel);
+% plot3DShapeRGB(OursVsAtkinson_squirrel, 'squirrel', 'Atkinson2006');
 %% Ours Vs Smith2019 TPAMI
+% % load data
+% OursVsSmith_bear1 = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_bear1.mat');
+% OursVsSmith_bear2 = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_bear2.mat');
+% OursVsSmith_doll = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_doll.mat');
+% OursVsSmith_squirrel = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_squirrel.mat');
+% % plot
+% [statisticsSmith2019_Ours_bear1, statisticsSmith2019_Other_bear1] = get_result(OursVsSmith_bear1);
+% plot3DShapeRGB(OursVsSmith_bear1, 'bear1', 'Smith2019');
+% [statisticsSmith2019_Ours_bear2, statisticsSmith2019_Other_bear2] = get_result(OursVsSmith_bear2);
+% plot3DShapeRGB(OursVsSmith_bear2, 'bear2', 'Smith2019');
+% [statisticsSmith2019_Ours_doll, statisticsSmith2019_Other_doll] = get_result(OursVsSmith_doll);
+% plot3DShapeRGB(OursVsSmith_doll, 'doll', 'Smith2019');
+% [statisticsSmith2019_Ours_squirrel, statisticsSmith2019_Other_squirrel] = get_result(OursVsSmith_squirrel);
+% plot3DShapeRGB(OursVsSmith_squirrel, 'squirrel', 'Smith2019');
+%% Ours Vs Ba2020 ECCV
 % load data
-OursVsSmith_bear1 = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_bear1.mat');
-OursVsSmith_bear2 = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_bear2.mat');
-OursVsSmith_doll = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_doll.mat');
-OursVsSmith_squirrel = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_squirrel.mat');
+OursVsSmith_bear1 = load('./Data/Data_ExperimentSonyDataset_OursVsBa2020_bear1.mat');
+OursVsSmith_bear2 = load('./Data/Data_ExperimentSonyDataset_OursVsBa2020_bear2.mat');
+OursVsSmith_doll = load('./Data/Data_ExperimentSonyDataset_OursVsBa2020_doll.mat');
+OursVsSmith_squirrel = load('./Data/Data_ExperimentSonyDataset_OursVsBa2020_squirrel.mat');
 % plot
-[statisticsSmith2019_Ours_bear1, statisticsSmith2019_Other_bear1] = get_result(OursVsSmith_bear1);
-plot3DShapeRGB(OursVsSmith_bear1, 'bear1', 'Smith2019');
-[statisticsSmith2019_Ours_bear2, statisticsSmith2019_Other_bear2] = get_result(OursVsSmith_bear2);
-plot3DShapeRGB(OursVsSmith_bear2, 'bear2', 'Smith2019');
-[statisticsSmith2019_Ours_doll, statisticsSmith2019_Other_doll] = get_result(OursVsSmith_doll);
-plot3DShapeRGB(OursVsSmith_doll, 'doll', 'Smith2019');
-[statisticsSmith2019_Ours_squirrel, statisticsSmith2019_Other_squirrel] = get_result(OursVsSmith_squirrel);
-plot3DShapeRGB(OursVsSmith_squirrel, 'squirrel', 'Smith2019');
-
+[statisticsBa2020_Ours_bear1, statisticsBa2020_Other_bear1] = get_result(OursVsSmith_bear1);
+plot3DShapeRGB(OursVsSmith_bear1, 'bear1', 'Ba2020');
+[statisticsBa2020_Ours_bear2, statisticsBa2020_Other_bear2] = get_result(OursVsSmith_bear2);
+plot3DShapeRGB(OursVsSmith_bear2, 'bear2', 'Ba2020');
+[statisticsBa2020_Ours_doll, statisticsBa2020_Other_doll] = get_result(OursVsSmith_doll);
+plot3DShapeRGB(OursVsSmith_doll, 'doll', 'Ba2020');
+[statisticsBa2020_Ours_squirrel, statisticsBa2020_Other_squirrel] = get_result(OursVsSmith_squirrel);
+plot3DShapeRGB(OursVsSmith_squirrel, 'squirrel', 'Ba2020');
 
 
 %%

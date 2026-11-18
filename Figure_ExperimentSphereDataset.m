@@ -3,12 +3,13 @@ clc;
 % clear; 
 close all;
 %% Data
-[Atkinson, Smith, Ngo, Beta] = getdata(".\Data");
+% [Atkinson, Smith, Ngo, Ba, Beta] = getdata(".\Data");
 % dataset = load("Data\Data_SphereDataset.mat");
 %% Error
-% AtkinsonError = getError(Atkinson);
-% SmithError = getError(Smith);
-% NgoError = getErrorNgo(Ngo);
+AtkinsonError = getError(Atkinson);
+SmithError = getError(Smith);
+NgoError = getErrorNgo(Ngo);
+BaError = getErrorBa(Ba);
 %% polar image
 % imageAll = NaN(1024, 1224);
 % maskAll = NaN(1024, 1224);
@@ -29,6 +30,7 @@ close all;
 % figRef = plotAllDesiredNormal(Atkinson);
 % figNgo = plotAllNgoNormal(Ngo);
 %% Normal error plot
+% % Atkinson
 % figAtkinson = plotAllNormalError(AtkinsonError);
 % fullPath = fullfile('./imageSphere/', 'fig_ErrorAtkinsonOrth.png');
 % exportgraphics(figAtkinson(1), fullPath, 'Resolution', 300);
@@ -36,6 +38,7 @@ close all;
 % exportgraphics(figAtkinson(2), fullPath, 'Resolution', 300);
 % fullPath = fullfile('./imageSphere/', 'fig_ErrorAtkinsonTemp.png');
 % exportgraphics(figAtkinson(3), fullPath, 'Resolution', 300);
+% % Smith
 % figSmith = plotAllNormalError(SmithError);
 % fullPath = fullfile('./imageSphere/', 'fig_ErrorSmithOrth.png');
 % exportgraphics(figSmith(1), fullPath, 'Resolution', 300);
@@ -43,6 +46,7 @@ close all;
 % exportgraphics(figSmith(2), fullPath, 'Resolution', 300);
 % fullPath = fullfile('./imageSphere/', 'fig_ErrorSmithTemp.png');
 % exportgraphics(figSmith(3), fullPath, 'Resolution', 300);
+% % Ngo
 % figNgo = plotAllNormalError(NgoError);
 % fullPath = fullfile('./imageSphere/', 'fig_ErrorNgoOrth.png');
 % exportgraphics(figNgo(1), fullPath, 'Resolution', 300);
@@ -50,25 +54,32 @@ close all;
 % exportgraphics(figNgo(2), fullPath, 'Resolution', 300);
 % fullPath = fullfile('./imageSphere/', 'fig_ErrorNgoTemp.png');
 % exportgraphics(figNgo(3), fullPath, 'Resolution', 300);
+% Ba
+figBa = plotAllNormalError(BaError);
+fullPath = fullfile('./imageSphere/', 'fig_ErrorBaOrth.png');
+exportgraphics(figBa(1), fullPath, 'Resolution', 300);
+fullPath = fullfile('./imageSphere/', 'fig_ErrorBaPers.png');
+exportgraphics(figBa(2), fullPath, 'Resolution', 300);
+fullPath = fullfile('./imageSphere/', 'fig_ErrorBaTemp.png');
+exportgraphics(figBa(3), fullPath, 'Resolution', 300);
 %% Beta all plot
-% [figAtkinsonBeta, betaAtkinsonStats] = plotErrorVsBeta(AtkinsonError, Beta, 3);
-% [figSmithBeta, betaSmithStats] = plotErrorVsBeta(SmithError, Beta, 2);
-% [figNgoBeta, betaNgoStats] = plotErrorVsBeta(NgoError, Beta, 1);
-% [figBaBeta, betaBaStats] = plotErrorVsBeta(NgoError, Beta, 4);
-% fullPath = fullfile('./imageSphere/', 'fig_AtkinsonErrorBeta.png');
-% exportgraphics(figAtkinsonBeta, fullPath, 'Resolution', 300);
-% fullPath = fullfile('./imageSphere/', 'fig_SmithErrorBeta.png');
-% exportgraphics(figSmithBeta, fullPath, 'Resolution', 300);
-% fullPath = fullfile('./imageSphere/', 'fig_NgoBeta.png');
-% exportgraphics(figNgoBeta, fullPath, 'Resolution', 300);
-% fullPath = fullfile('./imageSphere/', 'fig_BaBeta.png');
-% exportgraphics(figBaBeta, fullPath, 'Resolution', 300);
+[figAtkinsonBeta, betaAtkinsonStats] = plotErrorVsBeta(AtkinsonError, Beta, 3);
+[figSmithBeta, betaSmithStats] = plotErrorVsBeta(SmithError, Beta, 2);
+[figNgoBeta, betaNgoStats] = plotErrorVsBeta(NgoError, Beta, 1);
+[figBaBeta, betaBaStats] = plotErrorVsBeta(BaError, Beta, 4);
+fullPath = fullfile('./imageSphere/', 'fig_AtkinsonErrorBeta.png');
+exportgraphics(figAtkinsonBeta, fullPath, 'Resolution', 300);
+fullPath = fullfile('./imageSphere/', 'fig_SmithErrorBeta.png');
+exportgraphics(figSmithBeta, fullPath, 'Resolution', 300);
+fullPath = fullfile('./imageSphere/', 'fig_NgoBeta.png');
+exportgraphics(figNgoBeta, fullPath, 'Resolution', 300);
+fullPath = fullfile('./imageSphere/', 'fig_BaBeta.png');
+exportgraphics(figBaBeta, fullPath, 'Resolution', 300);
 %% Heatmap
 figAtkinson = plotErrorHeatmap(AtkinsonError);
 figSmith = plotErrorHeatmap(SmithError);
 figNgo = plotErrorHeatmap(NgoError);
-
-
+figBa = plotErrorHeatmap(BaError);
 
 %% Normal plot
 % nameList = "P" + string(1:16);
@@ -473,24 +484,33 @@ function [fig, stats] = plotErrorVsBeta(Error, Beta, num)
     yyaxis(ax, 'left');
     ylabel(ax, 'MAE \Delta \gamma (\circ)', 'FontSize', 42);
 
-    legend(ax, [hOrth, hPers], ...
-        {'Orth.', 'Pers.'}, ...
-        'Location', 'northwest', 'FontSize', 35);
 
     if num == 1
+        legend(ax, [hOrth, hPers], ...
+            {'Orth.', 'Pers.'}, ...
+            'Location', 'northwest', 'FontSize', 35);
         yyaxis(ax, 'right');
         ylabel(ax, ' ');
     elseif num == 2
+%         legend(ax, [hOrth, hPers], ...
+%             {'Orth.', 'Pers.'}, ...
+%             'Location', 'north', 'FontSize', 35);
         yyaxis(ax, 'right');
         ylabel(ax, ' ');
         yyaxis(ax, 'left');
         ylabel(ax, ' ');
     elseif num == 3
+%         legend(ax, [hOrth, hPers], ...
+%             {'Orth.', 'Pers.'}, ...
+%             'Location', 'north', 'FontSize', 35);
         yyaxis(ax, 'right');
         ylabel(ax, ' ');
         yyaxis(ax, 'left');
         ylabel(ax, ' ');
     elseif num == 4
+        legend(ax, [hOrth, hPers], ...
+            {'Orth.', 'Pers.'}, ...
+            'Location', 'northeast', 'FontSize', 35);        
         yyaxis(ax, 'left');
         ylabel(ax, ' ');
     end
@@ -741,7 +761,7 @@ function fig = plotNormal(data, objName)
     end
 end
 
-function [Atkinson, Smith, Ngo, Beta] = getdata(dataDir)
+function [Atkinson, Smith, Ngo, Ba, Beta] = getdata(dataDir)
     nameList = "P" + string(1:16);
     %% Atkinson
     for numObj = 1:numel(nameList)
@@ -755,11 +775,17 @@ function [Atkinson, Smith, Ngo, Beta] = getdata(dataDir)
         fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsSmith_', objName, '.mat']);
         Smith.(objName) = load(fileName);
     end
-    %% Smith
+    %% Ngo
     for numObj = 1:numel(nameList)
         objName = char(nameList(numObj));
         fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsNgo_', objName, '.mat']);
         Ngo.(objName) = load(fileName);
+    end
+    %% Ba
+    for numObj = 1:numel(nameList)
+        objName = char(nameList(numObj));
+        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsBa2020_mask_', objName, '.mat']);
+        Ba.(objName) = load(fileName);
     end
     %%
     fileName = fullfile(dataDir,  'Data_ExperimentSphereDataset_Beta.mat');
@@ -777,6 +803,24 @@ function Error = getError(data)
             Mask = data.(objName).maskAll(:,:,lNum);
             Error.(objName).error_Orth(:,:, lNum) = rad2deg(getErrorNormalAngle(N_orth, N_desired, Mask));
             Error.(objName).error_Pers(:,:, lNum) = rad2deg(getErrorNormalAngle(N_pers, N_desired, Mask));    
+        end
+    end
+
+end
+
+function Error = getErrorBa(data)
+    nameList = "P" + string(1:16);
+    lList = [1, 4];
+    for pNum = 1 : 16
+        objName = char(nameList(pNum));
+        for j = 1 : length(lList)
+            lNum = lList(j);
+            N_orth = data.(objName).N_Orth(:,:,:,lNum);
+            N_pers = data.(objName).N_Pers(:,:,:,lNum);
+            N_desired = data.(objName).N_Desired(:,:,:,lNum);
+            Mask = data.(objName).maskAll(:,:,lNum);
+            Error.(objName).error_Orth(:,:, j) = rad2deg(getErrorNormalAngle(N_orth, N_desired, Mask));
+            Error.(objName).error_Pers(:,:, j) = rad2deg(getErrorNormalAngle(N_pers, N_desired, Mask));    
         end
     end
 
