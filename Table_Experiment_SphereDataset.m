@@ -124,7 +124,7 @@ function [Atkinson, Smith, Ngo, Ba, Beta] = getdata(dataDir)
     %% Ba
     for numObj = 1:numel(nameList)
         objName = char(nameList(numObj));
-        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsBa2020_mask_', objName, '.mat']);
+        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsBa2020_', objName, '.mat']);
         Ba.(objName) = load(fileName);
     end
     %%

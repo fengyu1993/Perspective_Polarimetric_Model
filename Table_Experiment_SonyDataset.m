@@ -17,6 +17,11 @@ OursVsSmithResult(1) = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_bear1
 OursVsSmithResult(2) = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_bear2.mat');
 OursVsSmithResult(3) = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_doll.mat');
 OursVsSmithResult(4) = load('./Data/Data_ExperimentSonyDataset_OursVsSmith_squirrel.mat');
+% load data
+OursVsBaResult(1) = load('./Data/Data_ExperimentSonyDataset_OursVsBa2020_bear1.mat');
+OursVsBaResult(2) = load('./Data/Data_ExperimentSonyDataset_OursVsBa2020_bear2.mat');
+OursVsBaResult(3) = load('./Data/Data_ExperimentSonyDataset_OursVsBa2020_doll.mat');
+OursVsBaResult(4) = load('./Data/Data_ExperimentSonyDataset_OursVsBa2020_squirrel.mat');
 %% statistic
 OursVsAtkinson_MAE = NaN(3, length(OursVsAtkinsonResult));
 for i = 1 : length(OursVsAtkinsonResult)
@@ -42,19 +47,18 @@ for i = 1 : length(OursVsNgoResult)
 end
 OursVsNgo_MAE(3,:) = (OursVsNgo_MAE(1,:) - OursVsNgo_MAE(2,:)) ./ OursVsNgo_MAE(1,:) * 100;
 %% statistic
-OursVsLyu_MAE = NaN(3, numel(nameList));
-
-
-%% statistic
-OursVsBa_MAE = NaN(3, numel(nameList));
-
-
-
+OursVsBa_MAE = NaN(3, length(OursVsBaResult));
+for i = 1 : length(OursVsBaResult)
+    [Ours, Others] = get_result(OursVsBaResult(i));
+    OursVsBa_MAE(1,i) = Others.MAE(end);
+    OursVsBa_MAE(2,i) = Ours.MAE(end);
+end
+OursVsBa_MAE(3,:) = (OursVsBa_MAE(1,:) - OursVsBa_MAE(2,:)) ./ OursVsBa_MAE(1,:) * 100;
 %% output
 OursVsNgo_MAE
 OursVsSmith_MAE
 OursVsAtkinson_MAE
-
+OursVsBa_MAE
 
 for i = 1 : length(nameList)
     fprintf(['\\textit{%s}' ...

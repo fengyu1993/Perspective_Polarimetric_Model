@@ -1,9 +1,9 @@
 %% Our Sphere Dataset
 clc;
-% clear; 
+clear; 
 close all;
 %% Data
-% [Atkinson, Smith, Ngo, Ba, Beta] = getdata(".\Data");
+[Atkinson, Smith, Ngo, Ba, Beta] = getdata(".\Data");
 % dataset = load("Data\Data_SphereDataset.mat");
 %% Error
 AtkinsonError = getError(Atkinson);
@@ -76,10 +76,10 @@ exportgraphics(figNgoBeta, fullPath, 'Resolution', 300);
 fullPath = fullfile('./imageSphere/', 'fig_BaBeta.png');
 exportgraphics(figBaBeta, fullPath, 'Resolution', 300);
 %% Heatmap
-figAtkinson = plotErrorHeatmap(AtkinsonError);
-figSmith = plotErrorHeatmap(SmithError);
-figNgo = plotErrorHeatmap(NgoError);
-figBa = plotErrorHeatmap(BaError);
+% figAtkinson = plotErrorHeatmap(AtkinsonError);
+% figSmith = plotErrorHeatmap(SmithError);
+% figNgo = plotErrorHeatmap(NgoError);
+% figBa = plotErrorHeatmap(BaError);
 
 %% Normal plot
 % nameList = "P" + string(1:16);
@@ -484,11 +484,12 @@ function [fig, stats] = plotErrorVsBeta(Error, Beta, num)
     yyaxis(ax, 'left');
     ylabel(ax, 'MAE \Delta \gamma (\circ)', 'FontSize', 42);
 
-
-    if num == 1
-        legend(ax, [hOrth, hPers], ...
+    legend(ax, [hOrth, hPers], ...
             {'Orth.', 'Pers.'}, ...
             'Location', 'northwest', 'FontSize', 35);
+
+    if num == 1
+
         yyaxis(ax, 'right');
         ylabel(ax, ' ');
     elseif num == 2
@@ -508,9 +509,9 @@ function [fig, stats] = plotErrorVsBeta(Error, Beta, num)
         yyaxis(ax, 'left');
         ylabel(ax, ' ');
     elseif num == 4
-        legend(ax, [hOrth, hPers], ...
-            {'Orth.', 'Pers.'}, ...
-            'Location', 'northeast', 'FontSize', 35);        
+%         legend(ax, [hOrth, hPers], ...
+%             {'Orth.', 'Pers.'}, ...
+%             'Location', 'northeast', 'FontSize', 35);        
         yyaxis(ax, 'left');
         ylabel(ax, ' ');
     end
@@ -784,7 +785,7 @@ function [Atkinson, Smith, Ngo, Ba, Beta] = getdata(dataDir)
     %% Ba
     for numObj = 1:numel(nameList)
         objName = char(nameList(numObj));
-        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsBa2020_mask_', objName, '.mat']);
+        fileName = fullfile(dataDir,  ['Data_ExperimentSphereDataset_OursVsBa2020_', objName, '.mat']);
         Ba.(objName) = load(fileName);
     end
     %%
@@ -810,7 +811,7 @@ end
 
 function Error = getErrorBa(data)
     nameList = "P" + string(1:16);
-    lList = [1, 4];
+    lList = [1, 2];
     for pNum = 1 : 16
         objName = char(nameList(pNum));
         for j = 1 : length(lList)
