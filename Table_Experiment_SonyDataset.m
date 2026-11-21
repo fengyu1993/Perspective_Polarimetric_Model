@@ -29,6 +29,7 @@ for i = 1 : length(OursVsAtkinsonResult)
     OursVsAtkinson_MAE(1,i) = Others.MAE(end);
     OursVsAtkinson_MAE(2,i) = Ours.MAE(end);
 end
+OursVsAtkinson_MAE = round(OursVsAtkinson_MAE, 2);
 OursVsAtkinson_MAE(3,:) = (OursVsAtkinson_MAE(1,:) - OursVsAtkinson_MAE(2,:)) ./ OursVsAtkinson_MAE(1,:) * 100;
 %% statistic
 OursVsSmith_MAE = NaN(3, length(OursVsSmithResult));
@@ -37,6 +38,7 @@ for i = 1 : length(OursVsSmithResult)
     OursVsSmith_MAE(1,i) = Others.MAE(end);
     OursVsSmith_MAE(2,i) = Ours.MAE(end);
 end
+OursVsSmith_MAE = round(OursVsSmith_MAE, 2);
 OursVsSmith_MAE(3,:) = (OursVsSmith_MAE(1,:) - OursVsSmith_MAE(2,:)) ./ OursVsSmith_MAE(1,:) * 100;
 %% statistic
 OursVsNgo_MAE = NaN(3, length(OursVsNgoResult));
@@ -45,6 +47,7 @@ for i = 1 : length(OursVsNgoResult)
     OursVsNgo_MAE(1,i) = Others.MAE(end);
     OursVsNgo_MAE(2,i) = Ours.MAE(end);
 end
+OursVsNgo_MAE = round(OursVsNgo_MAE, 2);
 OursVsNgo_MAE(3,:) = (OursVsNgo_MAE(1,:) - OursVsNgo_MAE(2,:)) ./ OursVsNgo_MAE(1,:) * 100;
 %% statistic
 OursVsBa_MAE = NaN(3, length(OursVsBaResult));
@@ -53,6 +56,7 @@ for i = 1 : length(OursVsBaResult)
     OursVsBa_MAE(1,i) = Others.MAE(end);
     OursVsBa_MAE(2,i) = Ours.MAE(end);
 end
+OursVsBa_MAE = round(OursVsBa_MAE, 2);
 OursVsBa_MAE(3,:) = (OursVsBa_MAE(1,:) - OursVsBa_MAE(2,:)) ./ OursVsBa_MAE(1,:) * 100;
 %% output
 OursVsNgo_MAE

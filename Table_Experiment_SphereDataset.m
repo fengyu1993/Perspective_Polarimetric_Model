@@ -1,20 +1,20 @@
 %% 对比Sphere Dataset
 clc;
-% clear; 
+clear; 
 close all;
 %% Data
-% [Atkinson, Smith, Ngo, Ba, Beta] = getdata(".\Data");
+[Atkinson, Smith, Ngo, Ba, Beta] = getdata(".\Data");
 %% Error
-% AtkinsonError = getError(Atkinson);
-% SmithError = getError(Smith);
-% NgoError = getErrorNgo(Ngo);
-% BaError = getErrorBa(Ba);
+AtkinsonError = getError(Atkinson);
+SmithError = getError(Smith);
+NgoError = getErrorNgo(Ngo);
+BaError = getErrorBa(Ba);
 %%
 [AtkinsonOrthResult, AtkinsonPersResult] = getStatistics(AtkinsonError);
 [SmithOrthResult, SmithPersResult] = getStatistics(SmithError);
 [NgoOrthResult, NgoPersResult] = getStatistics(NgoError);
 [BaOrthResult, BaPersResult] = getStatistics(BaError);
-%% 输出 LaTeX 表格行
+%% 输出 LaTeX 表格行：由表中显示的数值计算降幅和增益
 methods = {'Ngo2022', 'Smith2019', 'Atkinson2006', 'Ba2020'};
 orth = {NgoOrthResult, SmithOrthResult, AtkinsonOrthResult, BaOrthResult};
 pers = {NgoPersResult, SmithPersResult, AtkinsonPersResult, BaPersResult};
@@ -24,38 +24,40 @@ for i = 1:numel(methods)
     O = orth{i};
     P = pers{i};
 
-    % MAE：较小值加粗；降幅由未舍入的 MAE 计算
-    [oText, pText] = formatPair(O.MAE, P.MAE, true);
-    if O.MAE > 0
-        reduction = 100 * (O.MAE - P.MAE) / O.MAE;
-        reductionText = sprintf('%.2f\\%%', reduction);
+    % 1. MAE：先保留两位小数，再计算相对降幅
+    o = round(O.MAE, 2);
+    p = round(P.MAE, 2);
+    [oText, pText] = formatPair(o, p, true, '');
+
+    if o > 0
+        reduction = round(100 * (o - p) / o, 2);
+        reductionText = [sprintf('%.2f', reduction), '\%'];
     else
         reductionText = '--';
     end
+
     fprintf('\\textit{%s} & %s & %s & %s', ...
         methods{i}, oText, pText, reductionText);
 
-    % 三个阈值组：较高比例加粗；增益为百分点差
+    % 2. 阈值比例：先将百分数保留两位，再计算百分点差
     for j = 1:numel(fields)
-        o = O.(fields{j});
-        p = P.(fields{j});
-        [oText, pText] = formatPair(o, p, false);
-        fprintf(' & & %s\\%% & %s\\textbf{\\%%} & +%.2f', oText, pText, p - o);
+        o = round(O.(fields{j}), 2);
+        p = round(P.(fields{j}), 2);
+        gain = round(p - o, 2);
+
+        [oText, pText] = formatPair(o, p, false, '\%');
+        fprintf(' & & %s & %s & %+.2f', oText, pText, gain);
     end
 
-    fprintf(' %s\n', '\\');   % LaTeX 行末输出两个反斜杠
+    fprintf(' %s\n', '\\');
 end
 
+%% 辅助函数：较优值连同百分号一起加粗；相等时均不加粗
+function [aText, bText] = formatPair(a, b, lowerIsBetter, suffix)
+    aText = sprintf('%.2f%s', a, suffix);
+    bText = sprintf('%.2f%s', b, suffix);
 
-
-
-%%
-function [aText, bText] = formatPair(a, b, lowerIsBetter)
-    aText = sprintf('%.2f', a);
-    bText = sprintf('%.2f', b);
-
-    % 两位小数相同时，不单独加粗
-    if strcmp(aText, bText)
+    if a == b
         return;
     end
 
@@ -163,7 +165,7 @@ end
 
 function Error = getErrorBa(data)
     nameList = "P" + string(1:16);
-    lList = [1, 4];
+    lList = [1, 2];
     for pNum = 1 : 16
         objName = char(nameList(pNum));
         for j = 1 : length(lList)

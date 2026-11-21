@@ -30,7 +30,7 @@ for i = 1:num_methods
     b1.BoxFaceColor = colors(i, :);
     b1.BoxFaceAlpha = 0.2;             
     b1.WhiskerLineColor = [0.1 0.1 0.1]; 
-    b1.MarkerStyle = '.';                
+    b1.MarkerStyle = 'none';                
     b1.MarkerColor = colors(i, :);       
     b1.LineWidth = 1.5;                  
     h_legend(i) = b1; 
@@ -41,7 +41,7 @@ for i = 1:num_methods
     b2.BoxFaceColor = colors(i, :);
     b2.BoxFaceAlpha = 0.2;             
     b2.WhiskerLineColor = [0.1 0.1 0.1]; 
-    b2.MarkerStyle = '.';                
+    b2.MarkerStyle = 'none';                
     b2.MarkerColor = colors(i, :);       
     b2.LineWidth = 1.5;                  
 end
